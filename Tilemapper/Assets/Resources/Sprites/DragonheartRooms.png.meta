@@ -1,31 +1,33 @@
 fileFormatVersion: 2
 guid: 135f9e1cf870e1e45a8039a0b12f393b
-timeCreated: 1517757248
+timeCreated: 1518180361
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: RoomNW
-    21300002: RoomN
-    21300004: RoomNE
-    21300006: RoomW
-    21300008: RoomOpen
-    21300010: RoomE
-    21300012: RoomSW
-    21300014: RoomS
-    21300016: RoomSE
+    21300000: 12_RoomNW
+    21300002: 14_RoomN
+    21300004: 10_RoomNE
+    21300006: 13_RoomW
+    21300008: 15_RoomOpen
+    21300010: 11_RoomE
+    21300012: 5_RoomSW
+    21300014: 7_RoomS
+    21300016: 3_RoomSE
     21300018: ExitW
     21300020: ExitNE
     21300022: ExitSE
     21300024: ExitSW
     21300026: ExitNW
     21300028: ExitE
-    21300030: DeadEndS
+    21300030: 1_DeadEndS
     21300032: ExitN
     21300034: ExitS
-    21300036: DeadEndE
-    21300038: DeadEndN
-    21300040: DeadEndW
-    21300042: RoomSurrounded
+    21300036: 2_DeadEndE
+    21300038: 8_DeadEndN
+    21300040: 4_DeadEndW
+    21300042: 0_RoomSurrounded
+    21300044: 9_Vertical
+    21300046: 6_Horizontal
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -92,7 +94,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: RoomNW
+      name: 12_RoomNW
       rect:
         serializedVersion: 2
         x: 0
@@ -105,7 +107,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: RoomN
+      name: 14_RoomN
       rect:
         serializedVersion: 2
         x: 16
@@ -118,7 +120,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: RoomNE
+      name: 10_RoomNE
       rect:
         serializedVersion: 2
         x: 32
@@ -131,7 +133,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: RoomW
+      name: 13_RoomW
       rect:
         serializedVersion: 2
         x: 0
@@ -144,7 +146,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: RoomOpen
+      name: 15_RoomOpen
       rect:
         serializedVersion: 2
         x: 16
@@ -157,7 +159,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: RoomE
+      name: 11_RoomE
       rect:
         serializedVersion: 2
         x: 32
@@ -170,7 +172,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: RoomSW
+      name: 5_RoomSW
       rect:
         serializedVersion: 2
         x: 0
@@ -183,7 +185,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: RoomS
+      name: 7_RoomS
       rect:
         serializedVersion: 2
         x: 16
@@ -196,7 +198,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: RoomSE
+      name: 3_RoomSE
       rect:
         serializedVersion: 2
         x: 32
@@ -209,153 +211,10 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: ExitW
+      name: 0_RoomSurrounded
       rect:
         serializedVersion: 2
         x: 48
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: ExitNE
-      rect:
-        serializedVersion: 2
-        x: 48
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: ExitSE
-      rect:
-        serializedVersion: 2
-        x: 48
-        y: 32
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: ExitSW
-      rect:
-        serializedVersion: 2
-        x: 64
-        y: 32
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: ExitNW
-      rect:
-        serializedVersion: 2
-        x: 64
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: ExitE
-      rect:
-        serializedVersion: 2
-        x: 64
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: DeadEndS
-      rect:
-        serializedVersion: 2
-        x: 80
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: ExitN
-      rect:
-        serializedVersion: 2
-        x: 80
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: ExitS
-      rect:
-        serializedVersion: 2
-        x: 80
-        y: 32
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: DeadEndE
-      rect:
-        serializedVersion: 2
-        x: 96
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: DeadEndN
-      rect:
-        serializedVersion: 2
-        x: 112
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: DeadEndW
-      rect:
-        serializedVersion: 2
-        x: 112
         y: 32
         width: 16
         height: 16
@@ -365,11 +224,76 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: RoomSurrounded
+      name: 4_DeadEndW
       rect:
         serializedVersion: 2
-        x: 96
+        x: 64
         y: 32
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: 9_Vertical
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 32
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: 8_DeadEndN
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: 2_DeadEndE
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: 1_DeadEndS
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: 6_Horizontal
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
         width: 16
         height: 16
       alignment: 0

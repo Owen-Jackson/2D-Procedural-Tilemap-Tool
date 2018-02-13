@@ -12,7 +12,7 @@ public class Tile : MonoBehaviour {
     [SerializeField]
     private int ID;
 
-    enum TileType
+    public enum TileType
     {
         NONE = 0,
         ROOM,
@@ -33,8 +33,14 @@ public class Tile : MonoBehaviour {
         gridPosition = pos;
     }
 
-	// Use this for initialization
-	void Awake () {
+    //Used to calculate bitmask value
+    public int GetGridPosition()
+    {
+        return gridPosition;
+    }
+
+    // Use this for initialization
+    void Awake () {
         spriteRenderer = GetComponent<SpriteRenderer>();
 	}
 
@@ -43,15 +49,19 @@ public class Tile : MonoBehaviour {
 		
 	}
 
-    //Used to calculate bitmask value
-    public int GetGridPosition()
-    {
-        return gridPosition;
-    }
-
     public void DeleteMe()
     {
         spriteRenderer.sprite = transform.parent.GetComponent<Tilemap>().GetGridSprite();
         type = TileType.NONE;
+    }
+
+    public TileType GetTileType()
+    {
+        return type;
+    }
+
+    public void SetBitmaskValue(int mask)
+    {
+
     }
 }

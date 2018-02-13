@@ -90,7 +90,6 @@ public class Tilemap : MonoBehaviour {
         DELETE = 2
     };
 
-
     [SerializeField]
     private Sprite[] roomSprites;
     [SerializeField]
@@ -113,18 +112,48 @@ public class Tilemap : MonoBehaviour {
     [SerializeField]
     TileMode RMB;
 
+    [SerializeField]
+    BSPDungeon BSPGenerator;
+
+    public void BSPGenerate()
+    {
+        ClearGrid();
+        BSPGenerator.BuildTree();
+        AddRooms();
+        FullBitmaskPass();
+    }
+
+    public void AddRooms()
+    {
+        List<NodeDungeon> roomNodes = BSPGenerator.GetNodesWithRooms();
+        if(roomNodes.Count > 0)
+        {
+            foreach(NodeDungeon room in roomNodes)
+            {
+                PlaceRoom(room.GetRoomXPos(), room.GetRoomYPos(), room.GetRoomWidth(), room.GetRoomHeight());
+            }
+        }
+    }
+
     public void RandomiseTileMap()
     {
         if (tiles == null)
         {
             InitialiseEmptyTileMap();
         }
+        int count = 0;
         for (int i = 0; i < gridHeight * gridWidth; i++)
         {
             tiles[i].DeleteMe();
-            int num = Random.Range(0, roomSprites.Length);
-            tiles[i].SetTile(roomSprites[num], 1);
+            if (Random.Range(0f, 1f) > 0.5f)
+            {
+                count++;
+                Debug.Log("random succeeded");
+                tiles[i].SetTile(roomSprites[0], 1);
+            }
         }
+        Debug.Log("num of successes: " + count);
+        FullBitmaskPass();
     }
 
     public void ClearGrid()
@@ -165,6 +194,11 @@ public class Tilemap : MonoBehaviour {
         //RandomiseTileMap();
         LMB = TileMode.ROOM;
         RMB = TileMode.DELETE;
+        if (GetComponent<BSPDungeon>())
+        {
+            BSPGenerator = GetComponent<BSPDungeon>();
+        }
+        BSPGenerator.SetGridSize(gridWidth, gridHeight);
     }
 
     // Update is called once per frame
@@ -212,6 +246,7 @@ public class Tilemap : MonoBehaviour {
             if (hit.collider.tag == "Tile")
             {
                 hit.collider.GetComponent<Tile>().SetTile(gridSprite, 0);
+                UpdateAdjacentTiles(hit.collider.GetComponent<Tile>().GetGridPosition(), Tile.TileType.ROOM);
             }
         }
     }
@@ -224,10 +259,125 @@ public class Tilemap : MonoBehaviour {
         {
             if (hit.collider.tag == "Tile")
             {
-                Debug.Log("adding room tile");
-                hit.collider.GetComponent<Tile>().SetTile(roomSprites[0], 1);
+                Tile component = hit.collider.GetComponent<Tile>();
+                if (component.GetTileType() != Tile.TileType.ROOM)
+                {
+                    int gridPos = component.GetGridPosition();
+                    //Debug.Log("adding room tile at " + gridPos);
+                    component.SetTile(roomSprites[GetBitmaskValue(gridPos)], 1);
+                    UpdateAdjacentTiles(gridPos, Tile.TileType.ROOM);
+                    component.SetTile(roomSprites[GetBitmaskValue(gridPos)], 1);
+                }
             }
         }
+    }
+
+    public void PlaceRoom(int xPos, int yPos, int width, int height)
+    {
+        for(int i = 0; i < height; i++)
+        {
+            for(int j = 0; j < width;j++)
+            {
+                tiles[GetPosFromCoords(xPos + j, yPos + i)].SetTile(roomSprites[0], 1);
+            }
+        }
+        /*
+        Debug.Log("SizeX = " + sizeX + " , SizeY = " + sizeY);
+        Debug.Log("Starting pos = " + startX + ", " + startY);
+        for (int i = 0; i < sizeX; i++)
+        {
+            for(int j = 0; j < sizeY;j++)
+            {
+               Debug.Log("input coords: " + (startX + i) + " , " + (startY - j));
+                //Debug.Log(GetPosFromCoords(startX + i, startY - j) - 1);
+                //if (GetPosFromCoords(startX + i, startY - j) - 1 >= 0 && GetPosFromCoords(startX + i, startY - j) - 1 < tiles.Count)
+                //{
+                    tiles[GetPosFromCoords(startX + i, startY - j) - 1].SetTile(roomSprites[0], 1);
+                //}
+            }
+        }
+        */
+    }
+
+    //Does a pass of the whole grid to update sprites
+    public void FullBitmaskPass()
+    {
+        foreach(Tile tile in tiles)
+        {
+            if (tile.GetTileType() == Tile.TileType.ROOM)
+            {
+                tile.SetTile(roomSprites[GetBitmaskValue(tile.GetGridPosition())], 1);
+            }
+        }
+    }
+
+    //tells adjacent tiles to update themselves
+    void UpdateAdjacentTiles(int gridPos, Tile.TileType type)
+    {
+        int north = GetNorth(gridPos);
+        int south = GetSouth(gridPos);
+        int east = GetEast(gridPos);
+        int west = GetWest(gridPos);
+
+        if (north < tiles.Count)
+        {
+            if (tiles[north].GetTileType() == type)
+            {
+                tiles[north].SetTile(roomSprites[GetBitmaskValue(north)], 1);
+            }
+        }
+
+        if (south >= 0)
+        {
+            if (tiles[south].GetTileType() == type)
+            {
+                tiles[south].SetTile(roomSprites[GetBitmaskValue(south)], 1);
+            }
+        }
+
+        if (east % gridWidth != 0)
+        {
+            if (tiles[east].GetTileType() == type)
+            {
+                tiles[east].SetTile(roomSprites[GetBitmaskValue(east)], 1);
+            }
+        }
+
+        if (gridPos % gridWidth != 0)
+        {
+            if (tiles[west].GetTileType() == type)
+            {
+                tiles[west].SetTile(roomSprites[GetBitmaskValue(west)], 1);
+            }
+        }
+    }
+
+    //Helper functions for grid positions
+    int GetNorth(int origin)
+    {
+        return origin + gridWidth;
+    }
+
+    int GetSouth(int origin)
+    {
+        return origin - gridWidth;
+    }
+
+    int GetEast(int origin)
+    {
+        return origin + 1;
+    }
+
+    int GetWest(int origin)
+    {
+        return origin - 1;
+    }
+
+    //returns a list index based on grid coordinates
+    int GetPosFromCoords(int x, int y)
+    {
+        int ind = x + y * gridWidth;
+        return ind;
     }
 
     void PlaceCorridor()
@@ -244,9 +394,57 @@ public class Tilemap : MonoBehaviour {
         }
     }
 
-    void AddNeighbourTiles(int gridIndex)
+    //Make it just for room tiles initially
+    int GetBitmaskValue(int gridIndex)
     {
-
+        int maskValue = 0;
+        //get the north value
+        int north = 0, east = 0, south = 0, west = 0;
+        if (gridIndex + gridWidth < tiles.Count)
+        {
+            if (tiles[gridIndex + gridWidth] != null)
+            {
+                if (tiles[gridIndex + gridWidth].GetTileType() == Tile.TileType.ROOM)
+                {
+                    north = 1;
+                }
+            }
+        }
+        //get the west value
+        if (gridIndex % gridWidth != 0)
+        {
+            if (tiles[gridIndex - 1] != null)
+            {
+                if (tiles[gridIndex - 1].GetTileType() == Tile.TileType.ROOM)
+                {
+                    west = 1;
+                }
+            }
+        }
+        //get the east value
+        if ((gridIndex + 1) % gridWidth != 0)
+        {
+            if (tiles[gridIndex + 1] != null)
+            {
+                if (tiles[gridIndex + 1].GetTileType() == Tile.TileType.ROOM)
+                {
+                    east = 1;
+                }
+            }
+        }
+        //get the south value
+        if (gridIndex - gridWidth >= 0)
+        {
+            if (tiles[gridIndex - gridWidth] != null)
+            {
+                if (tiles[gridIndex - gridWidth].GetTileType() == Tile.TileType.ROOM)
+                {
+                    south = 1;
+                }
+            }
+        }
+        maskValue = north + west * 2 + east * 4 + south * 8;
+        return maskValue;
     }
 
     public Sprite GetGridSprite()
