@@ -85,12 +85,11 @@ public class BSPDungeon : MonoBehaviour {
         nodesWithRooms = new List<NodeDungeon>();
         for(int i = 0; i < nodes.Count;i++)
         {
-            if(nodes[i].HasARoom())
+            if (nodes[i].GetRoom() != null)
             {
                 nodesWithRooms.Add(nodes[i]);
             }
         }
         return nodesWithRooms;
     }
-
 }

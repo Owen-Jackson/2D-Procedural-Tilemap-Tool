@@ -7,7 +7,7 @@ public class NodeDungeon {
 
     protected NodeDungeon parent;
 
-    static int minSizeForRoom = 5;
+    static int minSizeForRoom = 6;
 
     //public NodeDungeon[] children;
     private NodeDungeon leftChild = null;
@@ -33,13 +33,7 @@ public class NodeDungeon {
     //private int[] bottomRight;
 
     //stores the values for the room in this node
-    private bool hasARoom = false;
-    private int roomWidth;
-    private int roomHeight;
-    [SerializeField]
-    private int roomXPos;
-    [SerializeField]
-    private int roomYPos;
+    private Room room;
 
     public NodeDungeon(int x, int y, int _width, int _height) //x and y position starts in the bottom left
     {
@@ -76,22 +70,22 @@ public class NodeDungeon {
 
     public int GetRoomXPos()
     {
-        return roomXPos;
+        return room.XPos;
     }
 
     public int GetRoomYPos()
     {
-        return roomYPos;
+        return room.YPos;
     }
 
     public int GetRoomWidth()
     {
-        return roomWidth;
+        return room.Width;
     }
 
     public int GetRoomHeight()
     {
-        return roomHeight;
+        return room.Height;
     }
 
     public int GetYPos()
@@ -107,6 +101,11 @@ public class NodeDungeon {
     public int GetHeight()
     {
         return height;
+    }
+
+    public Room GetRoom()
+    {
+        return room;
     }
 
     public static void SetMinSizeForRoom(int min)
@@ -199,124 +198,32 @@ public class NodeDungeon {
         else
         {
             //this node is a leaf so make a room for it
-            hasARoom = true;
-            roomWidth = Random.Range(3, width);
-            roomHeight = Random.Range(3, height);
-            roomXPos = xPos + Random.Range(1, width - roomWidth + 1);
-            roomYPos = yPos + Random.Range(1, height - roomHeight + 1);
+            room = new Room(Random.Range(3, width), Random.Range(3, height));
+            room.XPos = xPos + Random.Range(1, width - room.Width + 1);
+            room.YPos = yPos + Random.Range(1, height - room.Height + 1);
+            room.SetEdges();
         }
     }
+    
+    //Connects rooms together
+    public void CreateCorridor()
+    {
+        List<Vector2> tileCoordinates = new List<Vector2>();
+        Vector2 point1 = new Vector2(Random.Range(leftChild.room.Left + 1, leftChild.room.Right - 2), Random.Range(leftChild.room.Bottom + 1, leftChild.room.Top - 2));
+        Vector2 point2 = new Vector2(Random.Range(rightChild.room.Left + 1, rightChild.room.Right - 2), Random.Range(rightChild.room.Bottom + 1, rightChild.room.Top - 2));
+        int w = (int)(point2.x - point1.x);
+        int h = (int)(point2.y - point1.y);
 
-    public bool HasARoom()
-    {
-        return hasARoom;
-    }
-    /*
-    public NodeDungeon(NodeDungeon _parent, int _depth, int[] _topLeft, int[] _bottomRight, Tilemap _tilemap)
-    {
-        parent = _parent;
-        treeDepth = _depth;
-        tilemap = _tilemap;
-        //Debug.Log("bottom right = " + _bottomRight[0] + ", " + _bottomRight[1]);
-        topLeft = new int[2] { _topLeft[0] + 1, _topLeft[1] - 1 };
-        bottomRight = new int[2] { _bottomRight[0] - 1, _bottomRight[1] + 1 };
-        gridArea = new int[2] { _bottomRight[0] - _topLeft[0], _topLeft[1] - _bottomRight[1]};
-        Debug.Log("initial grid area = " + gridArea[0] + ", " + gridArea[1]);
-    }
-
-    public int GetSplit()
-    {
-        return lineSplit;
-    }
-
-    public int GetDepth()
-    {
-        return treeDepth;
-    }
-
-    public List<NodeDungeon> SplitBranch(List<NodeDungeon> nodeList)
-    {
-        //if this node's bounds are larger than the minimum size, split tree
-        if (gridArea[0] > 4 && gridArea[1] > 4)
+        if(w < 0)
         {
-            children = new NodeDungeon[2] { null, null };
-            int[] childGridATL = topLeft; //top left
-            int[] childGridABR; //bottom right
-            int[] childGridBTL; //top left
-            int[] childGridBBR = bottomRight; //bottom right
-
-            //split randomly along the x or y axis
-            int axis = Random.Range(0, 1);  //0 = split along x-axis, 1 = split along y-axis
-            int split;
-            if (axis == 0)
+            if(h < 0)
             {
-                split = Random.Range(1, gridArea[1]);
-            }
-            else
-            {
-                split = Random.Range(1, gridArea[0]);
-            }
-            lineSplit = split;
-            //split--;
+                if(Random.Range(0,1) > 0.5)
+                {
 
-            //create two smaller grids from the split
-            if (split == 0)
-            {
-                //Debug.Log("splitting along the x axis at " + split);
-                childGridABR = new int[2] { topLeft[0] + split, bottomRight[1] };
-
-                childGridBTL = new int[2] { topLeft[0] + split, topLeft[1] };
+                }
             }
-            else
-            {
-                //Debug.Log("splitting along the y axis at " + split);
-                //Debug.Log("ABR = " + bottomRight[0] + ", " + (topLeft[1] - split));
-                childGridABR = new int[2] { bottomRight[0], topLeft[1] - split };
-                //Debug.Log("BTL = " + topLeft[0] + ", " + (topLeft[1] - split));
-                childGridBTL = new int[2] { topLeft[0], topLeft[1] - split };
-            }
-
-            //branch off the children with the new grids
-            //Debug.Log("child A topleft at: " + childGridATL[0] + ", " + childGridATL[1]);
-            //Debug.Log("child B topleft at: " + childGridBTL[0] + ", " + childGridBTL[1]);
-            children[0] = new NodeDungeon(this, treeDepth + 1, childGridATL, childGridABR, tilemap);
-            children[1] = new NodeDungeon(this, treeDepth + 1, childGridBTL, childGridBBR, tilemap);
-
-            //Repeat this function in the children it applies to
-            if (childGridABR[0] - childGridATL[0] > 4 && childGridATL[1] - childGridABR[1] > 4)
-            {
-                children[0].SplitBranch(nodeList);
-                //Debug.Log("splitting left side");
-            }
-            if (childGridBBR[0] - childGridBTL[0] > 4 && childGridBTL[1] - childGridBBR[1] > 4)
-            {
-                children[1].SplitBranch(nodeList);
-                //Debug.Log("splitting right side");
-            }
-            nodeList.Add(children[0]);
-            nodeList.Add(children[1]);
-        }
-
-        return nodeList;
-    }
-
-    public void CreateRooms()
-    {
-        if(children == null)
-        {
-            int[] roomStartPos = new int[2] { Random.Range(topLeft[0], bottomRight[0]), Random.Range(topLeft[1], bottomRight[1]) };
-            int sizeX = Random.Range(3, gridArea[0]);
-            int sizeY = Random.Range(3, gridArea[1]);
-            //Debug.Log("gridArea = " + gridArea[0] + ", " + gridArea[1]);
-            //Debug.Log("placing room. start pos = " + roomStartPos[0] + ", " + roomStartPos[1]);
-            //Debug.Log("sizeX = " + sizeX + " sizeY = " + sizeY);
-            tilemap.PlaceRoom(sizeX, sizeY, roomStartPos[0], roomStartPos[1]);
-        }
-        else
-        {
-            children[0].CreateRooms();
-            children[1].CreateRooms();
         }
     }
-    */
+
 }
