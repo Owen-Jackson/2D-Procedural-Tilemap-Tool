@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class NodeDungeon {
+public class NodeDungeon
+{
 
     protected NodeDungeon parent;
 
@@ -35,18 +36,21 @@ public class NodeDungeon {
     //stores the values for the room in this node
     private Room room;
 
+    //stores the corridor positions that link this node's children rooms
+    private List<Rect> corridor;
+
     public NodeDungeon(int x, int y, int _width, int _height) //x and y position starts in the bottom left
     {
         xPos = x;
         yPos = y;
         width = _width;
-        height = _height;    
+        height = _height;
     }
 
     public NodeDungeon GetLeftChild()
     {
         return leftChild;
-    }    
+    }
 
     public NodeDungeon GetRightChild()
     {
@@ -68,26 +72,6 @@ public class NodeDungeon {
         return xPos;
     }
 
-    public int GetRoomXPos()
-    {
-        return room.XPos;
-    }
-
-    public int GetRoomYPos()
-    {
-        return room.YPos;
-    }
-
-    public int GetRoomWidth()
-    {
-        return room.Width;
-    }
-
-    public int GetRoomHeight()
-    {
-        return room.Height;
-    }
-
     public int GetYPos()
     {
         return yPos;
@@ -105,7 +89,50 @@ public class NodeDungeon {
 
     public Room GetRoom()
     {
-        return room;
+        if (room != null)
+        {
+            return room;
+        }
+        
+        else
+        {
+            Room leftRoom = null;
+            Room rightRoom = null;
+            if(leftChild != null)
+            {
+                leftRoom = leftChild.GetRoom();              
+            }            
+            if(rightChild != null)
+            {
+                rightRoom = rightChild.GetRoom();
+            }
+
+            if(leftRoom == null && rightRoom == null)
+            {
+                return null;
+            }
+            else if(rightRoom == null)
+            {
+                return leftRoom;
+            }
+            else if(leftRoom == null)
+            {
+                return rightRoom;
+            }
+            else if(Random.Range(0, 1) < 0.5)
+            {
+                return leftRoom;
+            }
+            else
+            {
+                return rightRoom;
+            }                    
+        }
+    }
+
+    public List<Rect> GetCorridor()
+    {
+        return corridor;
     }
 
     public static void SetMinSizeForRoom(int min)
@@ -116,7 +143,7 @@ public class NodeDungeon {
     public bool SplitNode()
     {
         //get direction of split
-           //if height is too long, split along the y axis
+        //if height is too long, split along the y axis
         if (height > width && height / width >= 1.5f)
         {
             splitHorizontal = true;
@@ -135,15 +162,15 @@ public class NodeDungeon {
         //check this node has enough room to split
         int size = CalculateMaxRoomSize();
         //check that there is enough room for the split
-        if(size < minSizeForRoom)
+        if (size < minSizeForRoom)
         {
             //try the other split axis before giving up
             //splitHorizontal = !splitHorizontal;
             //size = CalculateMaxRoomSize();
             //if (size <= minSizeForRoom)
             //{
-                //not enough room left
-                return false;
+            //not enough room left
+            return false;
             //}
         }
 
@@ -151,7 +178,7 @@ public class NodeDungeon {
         lineSplit = Random.Range(minSizeForRoom, size);
 
         //create left and right children
-        if(splitHorizontal)
+        if (splitHorizontal)
         {
             leftChild = new NodeDungeon(xPos, yPos, width, lineSplit);
             rightChild = new NodeDungeon(xPos, yPos + lineSplit, width, height - lineSplit);
@@ -183,16 +210,23 @@ public class NodeDungeon {
     public void CreateRooms()
     {
         //if this node has children, it will not create a room
-        if(leftChild != null || rightChild != null)
+        if (leftChild != null || rightChild != null)
         {
             //create rooms in the children
-            if(leftChild != null)
+            if (leftChild != null)
             {
                 leftChild.CreateRooms();
             }
-            if(rightChild != null)
+            if (rightChild != null)
             {
                 rightChild.CreateRooms();
+            }
+
+            //if this node has two children then make a corridor between them
+            if (leftChild != null && rightChild != null)
+            {
+                //Debug.Log("making corridor between: " + leftChild.GetRoom() + " , " + rightChild.GetRoom());
+                CreateCorridor(leftChild.GetRoom(), rightChild.GetRoom());
             }
         }
         else
@@ -204,26 +238,94 @@ public class NodeDungeon {
             room.SetEdges();
         }
     }
-    
+
     //Connects rooms together
-    public void CreateCorridor()
+    public void CreateCorridor(Room leftRoom, Room rightRoom)
     {
-        List<Vector2> tileCoordinates = new List<Vector2>();
-        Vector2 point1 = new Vector2(Random.Range(leftChild.room.Left + 1, leftChild.room.Right - 2), Random.Range(leftChild.room.Bottom + 1, leftChild.room.Top - 2));
-        Vector2 point2 = new Vector2(Random.Range(rightChild.room.Left + 1, rightChild.room.Right - 2), Random.Range(rightChild.room.Bottom + 1, rightChild.room.Top - 2));
+        corridor = new List<Rect>();
+        Vector2 point1 = new Vector2(Random.Range(leftRoom.Left + 1, leftRoom.Right - 2), Random.Range(leftRoom.Bottom + 1, leftRoom.Top - 2));
+        Vector2 point2 = new Vector2(Random.Range(rightRoom.Left + 1, rightRoom.Right - 2), Random.Range(rightRoom.Bottom + 1, rightRoom.Top - 2));
+
         int w = (int)(point2.x - point1.x);
         int h = (int)(point2.y - point1.y);
 
-        if(w < 0)
+        if (w < 0)
         {
-            if(h < 0)
+            if (h < 0)
             {
-                if(Random.Range(0,1) > 0.5)
+                if (Random.Range(0, 1) < 0.5)
                 {
-
+                    corridor.Add(new Rect(point2.x, point1.y, Mathf.Abs(w), 1));
+                    corridor.Add(new Rect(point2.x, point2.y, 1, Mathf.Abs(h)));
                 }
+                else
+                {
+                    corridor.Add(new Rect(point2.x, point2.y, Mathf.Abs(w), 1));
+                    corridor.Add(new Rect(point1.x, point2.y, 1, Mathf.Abs(h)));
+                }
+            }
+            else if (h > 0)
+            {
+                if (Random.Range(0, 1) < 0.5)
+                {
+                    corridor.Add(new Rect(point2.x, point1.y, Mathf.Abs(w), 1));
+                    corridor.Add(new Rect(point2.x, point1.y, 1, Mathf.Abs(h)));
+                }
+                else
+                {
+                    corridor.Add(new Rect(point2.x, point2.y, Mathf.Abs(w), 1));
+                    corridor.Add(new Rect(point1.x, point1.y, 1, Mathf.Abs(h)));
+                }
+            }
+            else if (h == 0)
+            {
+                corridor.Add(new Rect(point2.x, point2.y, Mathf.Abs(w), 1));
+            }
+        }
+        else if (w > 0)
+        {
+            if (h < 0)
+            {
+                if (Random.Range(0, 1) < 0.5)
+                {
+                    corridor.Add(new Rect(point1.x, point2.y, Mathf.Abs(w), 1));
+                    corridor.Add(new Rect(point1.x, point2.y, 1, Mathf.Abs(h)));
+                }
+                else
+                {
+                    corridor.Add(new Rect(point1.x, point1.y, Mathf.Abs(w), 1));
+                    corridor.Add(new Rect(point2.x, point2.y, 1, Mathf.Abs(h)));
+                }
+            }
+            else if (h > 0)
+            {
+                if (Random.Range(0, 1) < 0.5)
+                {
+                    corridor.Add(new Rect(point1.x, point1.y, Mathf.Abs(w), 1));
+                    corridor.Add(new Rect(point2.x, point1.y, 1, Mathf.Abs(h)));
+                }
+                else
+                {
+                    corridor.Add(new Rect(point1.x, point2.y, Mathf.Abs(w), 1));
+                    corridor.Add(new Rect(point1.x, point1.y, 1, Mathf.Abs(h)));
+                }
+            }
+            else if (h == 0)
+            {
+                corridor.Add(new Rect(point1.x, point1.y, Mathf.Abs(w), 1));
+            }
+
+        }
+        else if (w == 0)
+        {
+            if (h < 0)
+            {
+                corridor.Add(new Rect(point2.x, point2.y, 1, Mathf.Abs(h)));
+            }
+            else if (h > 0)
+            {
+                corridor.Add(new Rect(point1.x, point1.y, 1, Mathf.Abs(h)));
             }
         }
     }
-
 }

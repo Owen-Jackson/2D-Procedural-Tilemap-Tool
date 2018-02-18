@@ -12,7 +12,7 @@ public class BSPDungeon : MonoBehaviour {
     List<LineRenderer> splitLines;
     public List<NodeDungeon> nodes;
     [SerializeField]
-    List<NodeDungeon> nodesWithRooms;
+    List<Room> rooms;
 
     public void Start()
     {
@@ -80,16 +80,30 @@ public class BSPDungeon : MonoBehaviour {
 
     }
 
-    public List<NodeDungeon> GetNodesWithRooms()
+    public List<Room> GetNodesWithRooms()
     {
-        nodesWithRooms = new List<NodeDungeon>();
+        rooms = new List<Room>();
         for(int i = 0; i < nodes.Count;i++)
         {
-            if (nodes[i].GetRoom() != null)
+            Room temp = nodes[i].GetRoom();
+            if (temp != null)
             {
-                nodesWithRooms.Add(nodes[i]);
+                rooms.Add(temp);
             }
         }
-        return nodesWithRooms;
+        return rooms;
+    }
+
+    public List<Rect> GetCorridors()
+    {
+        List<Rect> corridorsList = new List<Rect>();
+        for(int i = 0; i < nodes.Count; i++)
+        {
+            if(nodes[i].GetCorridor() != null)
+            {
+                corridorsList.AddRange(nodes[i].GetCorridor());
+            }
+        } 
+        return corridorsList;
     }
 }

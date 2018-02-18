@@ -120,17 +120,31 @@ public class Tilemap : MonoBehaviour {
         ClearGrid();
         BSPGenerator.BuildTree();
         AddRooms();
+        AddCorridors();
         FullBitmaskPass();
     }
 
     public void AddRooms()
     {
-        List<NodeDungeon> roomNodes = BSPGenerator.GetNodesWithRooms();
+        List<Room> roomNodes = BSPGenerator.GetNodesWithRooms();
         if(roomNodes.Count > 0)
         {
-            foreach(NodeDungeon room in roomNodes)
+            Debug.Log(roomNodes.Count);
+            foreach (Room room in roomNodes)
             {
-                PlaceRoom(room.GetRoomXPos(), room.GetRoomYPos(), room.GetRoomWidth(), room.GetRoomHeight());
+                PlaceRect(room.XPos, room.YPos, room.Width, room.Height, (int)Tile.TileType.ROOM);
+            }
+        }
+    }
+
+    public void AddCorridors()
+    {
+        List<Rect> corridors = BSPGenerator.GetCorridors();
+        if(corridors.Count > 0)
+        {
+            foreach(Rect corridor in corridors)
+            {
+                PlaceRect((int)corridor.x, (int)corridor.y, (int)corridor.width, (int)corridor.height, (int)Tile.TileType.CORRIDOR);
             }
         }
     }
@@ -272,31 +286,15 @@ public class Tilemap : MonoBehaviour {
         }
     }
 
-    public void PlaceRoom(int xPos, int yPos, int width, int height)
+    public void PlaceRect(int xPos, int yPos, int width, int height, int tileType)
     {
         for(int i = 0; i < height; i++)
         {
             for(int j = 0; j < width;j++)
             {
-                tiles[GetPosFromCoords(xPos + j, yPos + i)].SetTile(roomSprites[0], 1);
+                tiles[GetPosFromCoords(xPos + j, yPos + i)].SetTile(roomSprites[0], tileType);
             }
         }
-        /*
-        Debug.Log("SizeX = " + sizeX + " , SizeY = " + sizeY);
-        Debug.Log("Starting pos = " + startX + ", " + startY);
-        for (int i = 0; i < sizeX; i++)
-        {
-            for(int j = 0; j < sizeY;j++)
-            {
-               Debug.Log("input coords: " + (startX + i) + " , " + (startY - j));
-                //Debug.Log(GetPosFromCoords(startX + i, startY - j) - 1);
-                //if (GetPosFromCoords(startX + i, startY - j) - 1 >= 0 && GetPosFromCoords(startX + i, startY - j) - 1 < tiles.Count)
-                //{
-                    tiles[GetPosFromCoords(startX + i, startY - j) - 1].SetTile(roomSprites[0], 1);
-                //}
-            }
-        }
-        */
     }
 
     //Does a pass of the whole grid to update sprites
