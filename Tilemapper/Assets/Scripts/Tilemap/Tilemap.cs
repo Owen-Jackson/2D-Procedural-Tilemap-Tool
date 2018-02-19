@@ -4,64 +4,6 @@ using System.Linq;
 using UnityEngine;
 
 public class Tilemap : MonoBehaviour {
-    //Links the IDs of each tile to the sprite to load in
-    enum RoomTileIDs
-    {
-        DEADENDEAST = 0,
-        DEADENDNORTH,
-        DEADENDSOUTH,
-        DEADENDWEST,
-        EXITEAST,
-        EXITNORTH,
-        EXITNORTHEAST,
-        EXITNORTHWEST,
-        EXITSOUTH,
-        EXITSOUTHEAST,
-        EXITSOUTHWEST,
-        EXITWEST,
-        ROOMEAST,
-        ROOMNORTH,
-        ROOMNORTHEAST,
-        ROOMNORTHWEST,
-        ROOMOPEN,       //Plain floor tile
-        ROOMSOUTH,
-        ROOMSOUTHEAST,
-        ROOMSURROUNDED, //Walls on all four sides
-        ROOMSOUTHWEST,
-        ROOMWEST
-        /*
-        CORRIDORHORIZONTAL = 0,
-        CORRIDORVERTICAL = 1,
-        CROSSROAD = 2,
-        DEADENDEAST = 3,
-        DEADENDNORTH = 4,
-        DEADENDSOUTH = 5,
-        DEADENDWEST = 6,
-        EXITEAST = 7,
-        EXITNORTH = 8,
-        EXITSOUTH = 9,
-        EXITWEST = 10,
-        OPENFLOOR = 11,
-        WALLEAST = 12,
-        WALLNORTH = 13,
-        WALLNORTHEAST = 14,
-        WALLNORTHWEST = 15,
-        WALLSOUTH = 16,
-        WALLSOUTHEAST = 17,
-        WALLSOUTHWEST = 18,
-        WALLWEST = 19,
-        CORNERNORTHEAST = 20,
-        CORNERNORTHWEST = 21,
-        CORNERSOUTHEAST = 22,
-        CORNERSOUTHWEST = 23,
-        CORRIDORSURROUNDED = 24,
-        EXITNORTHEAST = 25,
-        EXITNORTHWEST = 26,
-        EXITSOUTHEAST = 27,
-        EXITSOUTHWEST = 28
-        */
-    };
-
     enum CorridorTileIDs
     {
         CORNERNORTHEAST = 0,
@@ -69,7 +11,7 @@ public class Tilemap : MonoBehaviour {
         CORNERSOUTHEAST,
         CORNERSOUTHWEST,
         CORRIDORHORIZONTAL,
-        CORRIDORSURROUNDED,     //Walls on all four sides (same sprite as room)
+        CORRIDORSURROUNDED,     //Walls on all four sides
         CORRIDORVERTICAL,
         CROSSROAD,
         DEADENDEAST,
@@ -95,17 +37,21 @@ public class Tilemap : MonoBehaviour {
     [SerializeField]
     private Sprite[] corridorSprites;
     [SerializeField]
+    private Sprite[] exitSprites;
+    //this dictionary maps the bitmask value to the sprite index
+    private Dictionary<int, int> exitSpriteIndexMap;
+    [SerializeField]
     private Sprite gridSprite;  //The default sprite for the grid (revert to when deleting a tile from the tilemap)
 
     //Can store a grid of tiles
     [SerializeField]
-    int gridWidth;
+    public int GridWidth { get; set; }
     [SerializeField]
-    int gridHeight;
+    public int GridHeight { get; set; }
     [SerializeField]
     int tileSize;
     [SerializeField]
-    List<Tile> tiles;
+    public List<Tile> Tiles { get; set; }
 
     [SerializeField]
     TileMode LMB;
@@ -115,95 +61,32 @@ public class Tilemap : MonoBehaviour {
     [SerializeField]
     BSPDungeon BSPGenerator;
 
-    public void BSPGenerate()
+
+    // Use this for initialization
+    void Start()
     {
-        ClearGrid();
-        BSPGenerator.BuildTree();
-        AddRooms();
-        AddCorridors();
-        FullBitmaskPass();
-    }
+        //WARNING HARD CODED, MAKE CHANGABLE IN UI LATER
+        GridWidth = 30;
+        GridHeight = 30;
+        TilemapData.Instance.GridWidth = GridWidth;
+        TilemapData.Instance.GridHeight = GridHeight;
 
-    public void AddRooms()
-    {
-        List<Room> roomNodes = BSPGenerator.GetNodesWithRooms();
-        if(roomNodes.Count > 0)
-        {
-            Debug.Log(roomNodes.Count);
-            foreach (Room room in roomNodes)
-            {
-                PlaceRect(room.XPos, room.YPos, room.Width, room.Height, (int)Tile.TileType.ROOM);
-            }
-        }
-    }
-
-    public void AddCorridors()
-    {
-        List<Rect> corridors = BSPGenerator.GetCorridors();
-        if(corridors.Count > 0)
-        {
-            foreach(Rect corridor in corridors)
-            {
-                PlaceRect((int)corridor.x, (int)corridor.y, (int)corridor.width, (int)corridor.height, (int)Tile.TileType.CORRIDOR);
-            }
-        }
-    }
-
-    public void RandomiseTileMap()
-    {
-        if (tiles == null)
-        {
-            InitialiseEmptyTileMap();
-        }
-        int count = 0;
-        for (int i = 0; i < gridHeight * gridWidth; i++)
-        {
-            tiles[i].DeleteMe();
-            if (Random.Range(0f, 1f) > 0.5f)
-            {
-                count++;
-                Debug.Log("random succeeded");
-                tiles[i].SetTile(roomSprites[0], 1);
-            }
-        }
-        Debug.Log("num of successes: " + count);
-        FullBitmaskPass();
-    }
-
-    public void ClearGrid()
-    {
-        if (tiles == null)
-        {
-            InitialiseEmptyTileMap();
-        }
-        for (int i = 0; i < gridHeight * gridWidth; i++)
-        {
-            tiles[i].DeleteMe();
-        }
-    }
-
-
-    public void InitialiseEmptyTileMap()
-    {
-        tiles = new List<Tile>();
-        for (int i = 0; i < gridHeight; i++)
-        {
-            for (int j = 0; j < gridWidth; j++)
-            {
-                Tile toAdd = Instantiate(Resources.Load<GameObject>("Prefabs/BaseTile").GetComponent<Tile>(), transform);
-                toAdd.SetTile(gridSprite, 0);
-                toAdd.transform.position = transform.position + new Vector3(j, i, 0);
-                toAdd.SetGridPosition(j + i * gridHeight);
-                tiles.Add(toAdd);
-            }
-        }
-    }
-
-	// Use this for initialization
-	void Start () {
         gridSprite = Resources.Load<Sprite>("Sprites/GridCell");
         roomSprites = Resources.LoadAll<Sprite>("Sprites/DragonheartRooms");
         corridorSprites = Resources.LoadAll<Sprite>("Sprites/DragonHeartCorridors");
+        exitSprites = Resources.LoadAll<Sprite>("Sprites/DragonHeartExits");
+        //create a map for the exit sprites
+        exitSpriteIndexMap = new Dictionary<int, int>()
+        {
+            {1, 0 },
+            {2, 1 },
+            {3, 2 },
+            {4, 3 },
+            {5, 4 },
+            {8, 5 },
+            {10, 6 },
+            {12, 7 }
+        };
         InitialiseEmptyTileMap();
         //RandomiseTileMap();
         LMB = TileMode.ROOM;
@@ -212,15 +95,16 @@ public class Tilemap : MonoBehaviour {
         {
             BSPGenerator = GetComponent<BSPDungeon>();
         }
-        BSPGenerator.SetGridSize(gridWidth, gridHeight);
+        BSPGenerator.SetGridSize(GridWidth, GridHeight);
     }
 
     // Update is called once per frame
-    void Update () {
+    void Update()
+    {
         //Right click
-        if(Input.GetMouseButton(1))
+        if (Input.GetMouseButton(1))
         {
-            switch(RMB)
+            switch (RMB)
             {
                 case TileMode.DELETE:
                     DeleteTile();
@@ -234,7 +118,7 @@ public class Tilemap : MonoBehaviour {
             }
         }
         //Left click
-        if(Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0))
         {
             switch (LMB)
             {
@@ -249,7 +133,129 @@ public class Tilemap : MonoBehaviour {
                     break;
             }
         }
-	}
+    }
+
+    public void BSPGenerate()
+    {
+        //Loop 100 times for testing purposes
+        //for (int i = 0; i < 100; i++)
+        //{
+        ClearGrid();
+        BSPGenerator.BuildTree();
+        AddRooms();
+        AddCorridors();
+        AddExits();
+        FullBitmaskPass();
+        //}
+    }
+
+    public void AddRooms()
+    {
+        List<Room> roomNodes = BSPGenerator.GetNodesWithRooms();
+        if(roomNodes.Count > 0)
+        {
+            Debug.Log(roomNodes.Count);
+            foreach (Room room in roomNodes)
+            {
+                PlaceRect(room.XPos, room.YPos, room.Width, room.Height, (int)Tile.TileType.ROOM);
+            }
+        }
+        UpdateTileMapDataTiles();
+    }
+
+    public void AddCorridors()
+    {
+        BSPGenerator.CreateCorridors();
+        List<Tile> corridors = BSPGenerator.GetCorridors();
+        if(corridors.Count > 0)
+        {
+            foreach(Tile corridorTile in corridors)
+            {
+                Tiles[corridorTile.GetGridPosition()].SetTile(corridorSprites[0], 2);
+                //PlaceRect((int)corridor.x, (int)corridor.y, (int)corridor.width, (int)corridor.height, (int)Tile.TileType.CORRIDOR);
+            }
+        }
+        UpdateTileMapDataTiles();
+    }
+
+    public void AddExits()
+    {
+        List<int> exits = BSPGenerator.GetExits();
+        if(exits.Count > 0)
+        {
+            foreach(int exit in exits)
+            {
+                Tiles[exit].SetTile(exitSprites[0], 3);
+            }
+        }
+    }
+
+    public void RandomiseTileMap()
+    {
+        if (Tiles == null)
+        {
+            InitialiseEmptyTileMap();
+        }
+        int count = 0;
+        for (int i = 0; i < GridHeight * GridWidth; i++)
+        {
+            Tiles[i].DeleteMe();
+            if (Random.Range(0f, 1f) > 0.5f)
+            {
+                count++;
+                Debug.Log("random succeeded");
+                Tiles[i].SetTile(roomSprites[0], 1);
+            }
+        }
+        Debug.Log("num of successes: " + count);
+        FullBitmaskPass();
+    }
+
+    public void ClearGrid()
+    {
+        if (Tiles == null)
+        {
+            InitialiseEmptyTileMap();
+        }
+        for (int i = 0; i < GridHeight * GridWidth; i++)
+        {
+            Tiles[i].DeleteMe();
+        }
+    }
+
+    public void InitialiseEmptyTileMap()
+    {
+        Tiles = new List<Tile>();
+        for (int i = 0; i < GridHeight; i++)
+        {
+            for (int j = 0; j < GridWidth; j++)
+            {
+                Tile toAdd = Instantiate(Resources.Load<GameObject>("Prefabs/BaseTile").GetComponent<Tile>(), transform);
+                toAdd.SetTile(gridSprite, 0);
+                toAdd.transform.position = transform.position + new Vector3(j, i, 0);
+                toAdd.SetGridPosition(j + i * GridHeight);
+                Tiles.Add(toAdd);
+            }
+        }
+        UpdateTileMapDataTiles();
+    }
+
+    public void UpdateWidth(int width)
+    {
+        GridWidth = width;
+        TilemapData.Instance.GridWidth = width;
+    }
+
+    public void UpdateHeight(int height)
+    {
+        GridHeight = height;
+        TilemapData.Instance.GridHeight = height;
+    }
+
+    private void UpdateTileMapDataTiles()
+    {
+        TilemapData.Instance.TilesList = Tiles;
+    }
 
     void DeleteTile()
     {
@@ -278,9 +284,9 @@ public class Tilemap : MonoBehaviour {
                 {
                     int gridPos = component.GetGridPosition();
                     //Debug.Log("adding room tile at " + gridPos);
-                    component.SetTile(roomSprites[GetBitmaskValue(gridPos)], 1);
+                    component.SetTile(roomSprites[GetBitmaskValue(gridPos, Tile.TileType.ROOM)], 1);
                     UpdateAdjacentTiles(gridPos, Tile.TileType.ROOM);
-                    component.SetTile(roomSprites[GetBitmaskValue(gridPos)], 1);
+                    component.SetTile(roomSprites[GetBitmaskValue(gridPos, Tile.TileType.ROOM)], 1);
                 }
             }
         }
@@ -292,7 +298,16 @@ public class Tilemap : MonoBehaviour {
         {
             for(int j = 0; j < width;j++)
             {
-                tiles[GetPosFromCoords(xPos + j, yPos + i)].SetTile(roomSprites[0], tileType);
+                try
+                {
+                    Tiles[GetPosFromCoords(xPos + j, yPos + i)].SetTile(roomSprites[0], tileType);
+                }
+                catch (System.ArgumentOutOfRangeException e)
+                {
+                    Debug.Log("this index is out of bounds: " + GetPosFromCoords(xPos + j, yPos + i));
+                    Debug.Log("Input values: xPos = " + xPos + " , yPos = " + yPos + " , width = " + width + " , height = " + height);
+                    throw new System.ArgumentOutOfRangeException("Index out of bounds: ", e);
+                }
             }
         }
     }
@@ -300,13 +315,22 @@ public class Tilemap : MonoBehaviour {
     //Does a pass of the whole grid to update sprites
     public void FullBitmaskPass()
     {
-        foreach(Tile tile in tiles)
+        foreach(Tile tile in Tiles)
         {
             if (tile.GetTileType() == Tile.TileType.ROOM)
             {
-                tile.SetTile(roomSprites[GetBitmaskValue(tile.GetGridPosition())], 1);
+                tile.SetTile(roomSprites[GetBitmaskValue(tile.GetGridPosition(), Tile.TileType.ROOM)], 1);
+            }
+            if(tile.GetTileType() == Tile.TileType.CORRIDOR)
+            {
+                tile.SetTile(corridorSprites[GetBitmaskValue(tile.GetGridPosition(), Tile.TileType.CORRIDOR)], 2);
+            }
+            if (tile.GetTileType() == Tile.TileType.EXIT)
+            {
+                tile.SetTile(exitSprites[exitSpriteIndexMap[GetBitmaskValue(tile.GetGridPosition(), Tile.TileType.EXIT)]], 3);
             }
         }
+        UpdateTileMapDataTiles();
     }
 
     //tells adjacent tiles to update themselves
@@ -317,35 +341,35 @@ public class Tilemap : MonoBehaviour {
         int east = GetEast(gridPos);
         int west = GetWest(gridPos);
 
-        if (north < tiles.Count)
+        if (north < Tiles.Count)
         {
-            if (tiles[north].GetTileType() == type)
+            if (Tiles[north].GetTileType() == type)
             {
-                tiles[north].SetTile(roomSprites[GetBitmaskValue(north)], 1);
+                Tiles[north].SetTile(roomSprites[GetBitmaskValue(north, type)], 1);
             }
         }
 
         if (south >= 0)
         {
-            if (tiles[south].GetTileType() == type)
+            if (Tiles[south].GetTileType() == type)
             {
-                tiles[south].SetTile(roomSprites[GetBitmaskValue(south)], 1);
+                Tiles[south].SetTile(roomSprites[GetBitmaskValue(south, type)], 1);
             }
         }
 
-        if (east % gridWidth != 0)
+        if (east % GridWidth != 0)
         {
-            if (tiles[east].GetTileType() == type)
+            if (Tiles[east].GetTileType() == type)
             {
-                tiles[east].SetTile(roomSprites[GetBitmaskValue(east)], 1);
+                Tiles[east].SetTile(roomSprites[GetBitmaskValue(east, type)], 1);
             }
         }
 
-        if (gridPos % gridWidth != 0)
+        if (gridPos % GridWidth != 0)
         {
-            if (tiles[west].GetTileType() == type)
+            if (Tiles[west].GetTileType() == type)
             {
-                tiles[west].SetTile(roomSprites[GetBitmaskValue(west)], 1);
+                Tiles[west].SetTile(roomSprites[GetBitmaskValue(west, type)], 1);
             }
         }
     }
@@ -353,12 +377,12 @@ public class Tilemap : MonoBehaviour {
     //Helper functions for grid positions
     int GetNorth(int origin)
     {
-        return origin + gridWidth;
+        return origin + GridWidth;
     }
 
     int GetSouth(int origin)
     {
-        return origin - gridWidth;
+        return origin - GridWidth;
     }
 
     int GetEast(int origin)
@@ -374,7 +398,7 @@ public class Tilemap : MonoBehaviour {
     //returns a list index based on grid coordinates
     int GetPosFromCoords(int x, int y)
     {
-        int ind = x + y * gridWidth;
+        int ind = x + y * GridWidth;
         return ind;
     }
 
@@ -393,53 +417,159 @@ public class Tilemap : MonoBehaviour {
     }
 
     //Make it just for room tiles initially
-    int GetBitmaskValue(int gridIndex)
+    int GetBitmaskValue(int gridIndex, Tile.TileType type)
     {
         int maskValue = 0;
-        //get the north value
         int north = 0, east = 0, south = 0, west = 0;
-        if (gridIndex + gridWidth < tiles.Count)
+        int flipMultiplier = 1;
+        switch (type)
         {
-            if (tiles[gridIndex + gridWidth] != null)
-            {
-                if (tiles[gridIndex + gridWidth].GetTileType() == Tile.TileType.ROOM)
+            case Tile.TileType.ROOM:
+                //get the north value
+                if (gridIndex + GridWidth < Tiles.Count)
                 {
-                    north = 1;
+                    if (Tiles[gridIndex + GridWidth] != null)
+                    {
+                        if (Tiles[gridIndex + GridWidth].GetTileType() == Tile.TileType.ROOM || Tiles[gridIndex + GridWidth].GetTileType() == Tile.TileType.EXIT)
+                        {
+                            north = 1;
+                        }
+                    }
                 }
-            }
-        }
-        //get the west value
-        if (gridIndex % gridWidth != 0)
-        {
-            if (tiles[gridIndex - 1] != null)
-            {
-                if (tiles[gridIndex - 1].GetTileType() == Tile.TileType.ROOM)
+                //get the west value
+                if (gridIndex % GridWidth != 0)
                 {
-                    west = 1;
+                    if (Tiles[gridIndex - 1] != null)
+                    {
+                        if (Tiles[gridIndex - 1].GetTileType() == Tile.TileType.ROOM || Tiles[gridIndex - 1].GetTileType() == Tile.TileType.EXIT)
+                        {
+                            west = 1;
+                        }
+                    }
                 }
-            }
-        }
-        //get the east value
-        if ((gridIndex + 1) % gridWidth != 0)
-        {
-            if (tiles[gridIndex + 1] != null)
-            {
-                if (tiles[gridIndex + 1].GetTileType() == Tile.TileType.ROOM)
+                //get the east value
+                if ((gridIndex + 1) % GridWidth != 0)
                 {
-                    east = 1;
+                    if (Tiles[gridIndex + 1] != null)
+                    {
+                        if (Tiles[gridIndex + 1].GetTileType() == Tile.TileType.ROOM || Tiles[gridIndex + 1].GetTileType() == Tile.TileType.EXIT)
+                        {
+                            east = 1;
+                        }
+                    }
                 }
-            }
-        }
-        //get the south value
-        if (gridIndex - gridWidth >= 0)
-        {
-            if (tiles[gridIndex - gridWidth] != null)
-            {
-                if (tiles[gridIndex - gridWidth].GetTileType() == Tile.TileType.ROOM)
+                //get the south value
+                if (gridIndex - GridWidth >= 0)
                 {
-                    south = 1;
+                    if (Tiles[gridIndex - GridWidth] != null)
+                    {
+                        if (Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.ROOM || Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.EXIT)
+                        {
+                            south = 1;
+                        }
+                    }
                 }
-            }
+                break;
+            case Tile.TileType.CORRIDOR:
+                //get the north value
+                if (gridIndex + GridWidth < Tiles.Count)
+                {
+                    if (Tiles[gridIndex + GridWidth] != null)
+                    {
+                        if (Tiles[gridIndex + GridWidth].GetTileType() == Tile.TileType.CORRIDOR || Tiles[gridIndex + GridWidth].GetTileType() == Tile.TileType.EXIT)
+                        {
+                            north = 1;
+                        }
+                    }
+                }
+                //get the west value
+                if (gridIndex % GridWidth != 0)
+                {
+                    if (Tiles[gridIndex - 1] != null)
+                    {
+                        if (Tiles[gridIndex - 1].GetTileType() == Tile.TileType.CORRIDOR || Tiles[gridIndex - 1].GetTileType() == Tile.TileType.EXIT)
+                        {
+                            west = 1;
+                        }
+                    }
+                }
+                //get the east value
+                if ((gridIndex + 1) % GridWidth != 0)
+                {
+                    if (Tiles[gridIndex + 1] != null)
+                    {
+                        if (Tiles[gridIndex + 1].GetTileType() == Tile.TileType.CORRIDOR || Tiles[gridIndex + 1].GetTileType() == Tile.TileType.EXIT)
+                        {
+                            east = 1;
+                        }
+                    }
+                }
+                //get the south value
+                if (gridIndex - GridWidth >= 0)
+                {
+                    if (Tiles[gridIndex - GridWidth] != null)
+                    {
+                        if (Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.CORRIDOR || Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.EXIT)
+                        {
+                            south = 1;
+                        }
+                    }
+                }
+                break;
+            case Tile.TileType.EXIT:
+                //get the north value
+                if (gridIndex + GridWidth < Tiles.Count)
+                {
+                    if (Tiles[gridIndex + GridWidth] != null)
+                    {
+                        if (Tiles[gridIndex + GridWidth].GetTileType() == Tile.TileType.CORRIDOR)
+                        {
+                            north = 1;
+                        }
+                    }
+                }
+                //get the west value
+                if (gridIndex % GridWidth != 0)
+                {
+                    if (Tiles[gridIndex - 1] != null)
+                    {
+                        if (Tiles[gridIndex - 1].GetTileType() == Tile.TileType.CORRIDOR)
+                        {
+                            west = 1;
+                        }
+                    }
+                }
+                //get the east value
+                if ((gridIndex + 1) % GridWidth != 0)
+                {
+                    if (Tiles[gridIndex + 1] != null)
+                    {
+                        if (Tiles[gridIndex + 1].GetTileType() == Tile.TileType.CORRIDOR || Tiles[gridIndex + 1].GetTileType() == Tile.TileType.NONE)
+                        {
+                            east = 1;
+                        }
+                        //else if(Tiles[gridIndex + 1].GetTileType() == Tile.TileType.NONE)
+                        //{
+                          //  flipMultiplier = -1;
+                        //}
+                    }
+                }
+                //get the south value
+                if (gridIndex - GridWidth >= 0)
+                {
+                    if (Tiles[gridIndex - GridWidth] != null)
+                    {
+                        if (Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.CORRIDOR || Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.NONE)
+                        {
+                            south = 1;
+                        }
+                        //else if(Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.NONE)
+                        //{
+                          //  flipMultiplier = -1;
+                        //}
+                    }
+                }
+                break;
         }
         maskValue = north + west * 2 + east * 4 + south * 8;
         return maskValue;
@@ -449,5 +579,4 @@ public class Tilemap : MonoBehaviour {
     {
         return gridSprite;
     }
-    
 }

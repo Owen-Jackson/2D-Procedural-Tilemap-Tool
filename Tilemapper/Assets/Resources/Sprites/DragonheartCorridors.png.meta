@@ -1,25 +1,25 @@
 fileFormatVersion: 2
 guid: 8a7d21afba33c9a4c9341a884a9bca43
-timeCreated: 1517757455
+timeCreated: 1519014164
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: DeadEndW
-    21300002: CorridorH
-    21300004: DeadEndE
-    21300006: DeadEndN
-    21300008: CorridorV
-    21300010: DeadEndS
-    21300012: CorridorSurrounded
-    21300014: CornerNE
-    21300016: CornerSE
-    21300018: CornerSW
-    21300020: CornerNW
-    21300022: Crossroad
-    21300024: TJunctionE
-    21300026: TJunctionW
-    21300028: TJunctionN
-    21300030: TJunctionS
+    21300000: 4_DeadEndW
+    21300002: 6_CorridorH
+    21300004: 2_DeadEndE
+    21300006: 8_DeadEndN
+    21300008: 9_CorridorV
+    21300010: 1_DeadEndS
+    21300012: 0_CorridorSurrounded
+    21300014: 5_CornerNE
+    21300016: 12_CornerSE
+    21300018: 10_CornerSW
+    21300020: 3_CornerNW
+    21300022: 15_Crossroad
+    21300024: 13_TJunctionE
+    21300026: 11_TJunctionW
+    21300028: 7_TJunctionN
+    21300030: 14_TJunctionS
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -86,7 +86,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: DeadEndW
+      name: 4_DeadEndW
       rect:
         serializedVersion: 2
         x: 0
@@ -94,12 +94,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: CorridorH
+      name: 6_CorridorH
       rect:
         serializedVersion: 2
         x: 16
@@ -107,12 +107,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: DeadEndE
+      name: 2_DeadEndE
       rect:
         serializedVersion: 2
         x: 32
@@ -120,12 +120,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: DeadEndN
+      name: 8_DeadEndN
       rect:
         serializedVersion: 2
         x: 0
@@ -133,12 +133,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: CorridorV
+      name: 9_CorridorV
       rect:
         serializedVersion: 2
         x: 0
@@ -146,12 +146,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: DeadEndS
+      name: 1_DeadEndS
       rect:
         serializedVersion: 2
         x: 0
@@ -159,12 +159,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: CorridorSurrounded
+      name: 0_CorridorSurrounded
       rect:
         serializedVersion: 2
         x: 16
@@ -172,12 +172,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: CornerNE
+      name: 5_CornerNE
       rect:
         serializedVersion: 2
         x: 16
@@ -185,12 +185,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: CornerSE
+      name: 12_CornerSE
       rect:
         serializedVersion: 2
         x: 16
@@ -198,12 +198,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: CornerSW
+      name: 10_CornerSW
       rect:
         serializedVersion: 2
         x: 32
@@ -211,12 +211,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: CornerNW
+      name: 3_CornerNW
       rect:
         serializedVersion: 2
         x: 32
@@ -224,12 +224,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: Crossroad
+      name: 15_Crossroad
       rect:
         serializedVersion: 2
         x: 32
@@ -237,12 +237,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: TJunctionE
+      name: 13_TJunctionE
       rect:
         serializedVersion: 2
         x: 48
@@ -250,12 +250,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: TJunctionW
+      name: 11_TJunctionW
       rect:
         serializedVersion: 2
         x: 64
@@ -263,12 +263,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: TJunctionN
+      name: 7_TJunctionN
       rect:
         serializedVersion: 2
         x: 64
@@ -276,12 +276,12 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: TJunctionS
+      name: 14_TJunctionS
       rect:
         serializedVersion: 2
         x: 48
@@ -289,7 +289,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0

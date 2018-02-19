@@ -16,7 +16,8 @@ public class Tile : MonoBehaviour {
     {
         NONE = 0,
         ROOM,
-        CORRIDOR
+        CORRIDOR,
+        EXIT
     };
 
     [SerializeField]

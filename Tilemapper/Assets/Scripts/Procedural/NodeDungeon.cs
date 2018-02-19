@@ -1,10 +1,23 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 [System.Serializable]
 public class NodeDungeon
 {
+    public class AStarNode
+    {
+        public int FScore { get; set; } //The total quality value (= GScore + HScore)
+        public int GScore { get; set; } //How many moves from the starting point to this is
+        public int HScore { get; set; } //How many moves from this point to the finish is
+        public Vector2 Position { get; set; }
+        public AStarNode Parent { get; set; }
+        public Tile NodeTile { get; set; }  //stores the tile at this node
+    }
+
+    //a list of all of the tiles for the A* algorithm
+    List<AStarNode> aStarNodes = new List<AStarNode>();
 
     protected NodeDungeon parent;
 
@@ -19,8 +32,6 @@ public class NodeDungeon
 
     int lineSplit;           //The position of the split along the axis it is splitting
     bool splitHorizontal;    //says whether the split is along the x or y axis
-
-    Tilemap tilemap;
 
     //positions of the corners of the grid to create the bounds
     int xPos;
@@ -37,7 +48,9 @@ public class NodeDungeon
     private Room room;
 
     //stores the corridor positions that link this node's children rooms
-    private List<Rect> corridor;
+    private List<Tile> corridor;
+
+    private List<int> exitPositions;
 
     public NodeDungeon(int x, int y, int _width, int _height) //x and y position starts in the bottom left
     {
@@ -130,9 +143,14 @@ public class NodeDungeon
         }
     }
 
-    public List<Rect> GetCorridor()
+    public List<Tile> GetCorridor()
     {
         return corridor;
+    }
+
+    public List<int> GetExits()
+    {
+        return exitPositions;
     }
 
     public static void SetMinSizeForRoom(int min)
@@ -164,14 +182,7 @@ public class NodeDungeon
         //check that there is enough room for the split
         if (size < minSizeForRoom)
         {
-            //try the other split axis before giving up
-            //splitHorizontal = !splitHorizontal;
-            //size = CalculateMaxRoomSize();
-            //if (size <= minSizeForRoom)
-            //{
-            //not enough room left
             return false;
-            //}
         }
 
         //get which coordinate to split along
@@ -222,12 +233,14 @@ public class NodeDungeon
                 rightChild.CreateRooms();
             }
 
+            /*
             //if this node has two children then make a corridor between them
             if (leftChild != null && rightChild != null)
             {
                 //Debug.Log("making corridor between: " + leftChild.GetRoom() + " , " + rightChild.GetRoom());
                 CreateCorridor(leftChild.GetRoom(), rightChild.GetRoom());
             }
+            */
         }
         else
         {
@@ -239,13 +252,46 @@ public class NodeDungeon
         }
     }
 
+    public void CreateCorridorRecursive()
+    {
+        //if this node has children, it will be able to create a corridor
+        if (leftChild != null || rightChild != null)
+        {
+            //create rooms in the children
+            if (leftChild != null)
+            {
+                leftChild.CreateCorridorRecursive();
+            }
+            if (rightChild != null)
+            {
+                rightChild.CreateCorridorRecursive();
+            }
+
+            //if this node has two children then make a corridor between them
+            if (leftChild != null && rightChild != null)
+            {
+                //Debug.Log("making corridor between: " + leftChild.GetRoom() + " , " + rightChild.GetRoom());
+                CreateCorridor(leftChild.GetRoom(), rightChild.GetRoom());
+            }
+        }
+    }
+
     //Connects rooms together
     public void CreateCorridor(Room leftRoom, Room rightRoom)
     {
-        corridor = new List<Rect>();
-        Vector2 point1 = new Vector2(Random.Range(leftRoom.Left + 1, leftRoom.Right - 2), Random.Range(leftRoom.Bottom + 1, leftRoom.Top - 2));
-        Vector2 point2 = new Vector2(Random.Range(rightRoom.Left + 1, rightRoom.Right - 2), Random.Range(rightRoom.Bottom + 1, rightRoom.Top - 2));
+        corridor = new List<Tile>();
+        //Vector2 point1 = new Vector2(Random.Range(leftRoom.Left, leftRoom.Right), Random.Range(leftRoom.Bottom, leftRoom.Top));
+        //Vector2 point2 = new Vector2(Random.Range(rightRoom.Left, rightRoom.Right), Random.Range(rightRoom.Bottom, rightRoom.Top));
 
+        //get where to exit each room
+        Vector3 point1 = GetExitEdge(leftRoom, rightRoom);
+        Vector3 point2 = GetExitEdge(rightRoom, leftRoom);
+        Vector2 exit1 = GetExitPos(point1, (int)point1.z);
+        Vector2 exit2 = GetExitPos(point2, (int)point2.z);
+
+
+        corridor.AddRange(AStar(point1, point2, exit1, exit2));
+        /*
         int w = (int)(point2.x - point1.x);
         int h = (int)(point2.y - point1.y);
 
@@ -327,5 +373,264 @@ public class NodeDungeon
                 corridor.Add(new Rect(point1.x, point1.y, 1, Mathf.Abs(h)));
             }
         }
+        */
+    }
+
+    //Randomly selects where to create an exit out of this room from
+    private Vector3 GetExitEdge(Room room1, Room room2)
+    {
+        Vector3 point = new Vector3();
+        bool validPoint = false;
+        List<KeyValuePair<int, int>> edgeDistances = new List<KeyValuePair<int, int>>();
+        edgeDistances.Add(new KeyValuePair<int, int>(0, Mathf.Abs(room2.Left - room1.Left)));
+        edgeDistances.Add(new KeyValuePair<int, int>(1, Mathf.Abs(room2.Right - room1.Right)));
+        edgeDistances.Add(new KeyValuePair<int, int>(2, Mathf.Abs(room2.Top - room1.Top)));
+        edgeDistances.Add(new KeyValuePair<int, int>(3, Mathf.Abs(room2.Bottom - room1.Bottom)));
+
+        edgeDistances = edgeDistances.OrderBy(x => x.Value).ToList();
+
+        //randomly pick a side to start tunneling from
+        int bestInd = 0;
+        while (!validPoint)
+        {            
+            switch (edgeDistances[bestInd].Key)
+            {
+                //exit out of the left side
+                case 0:
+                    if (room1.Left > 0)
+                    {
+                        point = new Vector3(room1.Left - 1, Random.Range(room1.Bottom, room1.Top), 0);
+                        //Debug.Log("selecting from left" + point);
+                        validPoint = true;
+                    }
+                    break;
+                //exit out of the right side
+                case 1:
+                    if (room1.Right < TilemapData.Instance.GridWidth - 1)
+                    {
+                        point = new Vector3(room1.Right, Random.Range(room1.Bottom, room1.Top), 1);
+                        //Debug.Log("selecting from right" + point);
+                        validPoint = true;
+                    }
+                    break;
+                //exit out of the top
+                case 2:
+                    if (room1.Top < TilemapData.Instance.GridHeight - 1)
+                    {
+                        point = new Vector3(Random.Range(room1.Left, room1.Right), room1.Top, 2);
+                        //Debug.Log("selecting from top" + point);
+                        validPoint = true;
+                    }
+                    break;
+                //exit out of the bottom
+                case 3:
+                    if (room1.Bottom > 0)
+                    {
+                        point = new Vector3(Random.Range(room1.Left, room1.Right), room1.Bottom - 1, 3);
+                        //Debug.Log("selecting from bottom" + point);
+                        validPoint = true;
+                    }
+                    break;
+                default:
+                    validPoint = true;
+                    break;
+            }
+            if(bestInd >= 3)
+            {
+                break;
+            }
+            if(!validPoint)
+            {
+                bestInd++;
+            }
+        }
+        return point;
+    }
+
+    private Vector2 GetExitPos(Vector2 origin, int side)
+    {
+        switch(side)
+        {
+            //exit from left side
+            case 0:
+                return new Vector2(origin.x + 1, origin.y);
+            //exit from right side
+            case 1:
+                return new Vector2(origin.x - 1, origin.y);
+            //exit from top side
+            case 2:
+                return new Vector2(origin.x, origin.y - 1);
+            //exit from bottom side
+            case 3:
+                return new Vector2(origin.x, origin.y + 1);
+            default:
+                return origin;
+
+        }
+    }
+
+    public List<Tile> AStar(Vector2 start, Vector2 end, Vector2 exit1, Vector2 exit2)
+    {
+        //create full list of nodes from the grid
+        aStarNodes = new List<AStarNode>();
+        for (int i = 0; i < TilemapData.Instance.GridHeight; i++)
+        {
+            for (int j = 0; j < TilemapData.Instance.GridWidth; j++)
+            {
+                AStarNode toAdd = new AStarNode();
+                toAdd.NodeTile = TilemapData.Instance.TilesList[TilemapData.Instance.GetPosFromCoords(j , i)];
+                toAdd.Position = new Vector2(j, i);
+                toAdd.HScore = (int)(Mathf.Abs(end.x - toAdd.Position.x) + Mathf.Abs(end.y - toAdd.Position.y));
+                toAdd.Parent = null;
+                aStarNodes.Add(toAdd);
+            }
+        }
+
+        //create open and closed lists
+        List<AStarNode> openList = new List<AStarNode>();
+        List<AStarNode> closedList = new List<AStarNode>();
+
+        int hValue = (int)(Mathf.Abs((end.x - start.x)) + Mathf.Abs((end.y - start.y)));
+        //set the starting node
+        AStarNode startFrom = aStarNodes.FirstOrDefault(x => x.Position == exit1);
+        AStarNode endAt = aStarNodes.FirstOrDefault(x => x.Position == exit2);
+        exitPositions = new List<int>() { startFrom.NodeTile.GetGridPosition(), endAt.NodeTile.GetGridPosition() };
+        startFrom.GScore = 0;
+
+        //add starting point to the open list
+        openList.Add(startFrom);
+        //check that the scores are the same for debug
+        //Debug.Log("hValue: " + hValue + " , startfrom hScore: " + startFrom.HScore);
+
+        bool foundPath = false;
+        do
+        {
+            //find the tile with the lowest (read: best) score
+            int lowestScoreInd = 0;
+            for (int i = 0; i < openList.Count; i++)
+            {
+                if (openList[i].FScore < openList[lowestScoreInd].FScore)
+                {
+                    lowestScoreInd = i;
+                }
+            }
+            AStarNode currentNode = openList[lowestScoreInd];
+
+            //add it to the closed list and remove it from the open list
+            closedList.Add(currentNode);
+            openList.Remove(currentNode);
+
+            //check if the destination tile is in the closed list
+            for (int i = 0; i < closedList.Count; i++)
+            {
+                if (closedList[i].Position == end)
+                {
+                    //the destination was just added so we can go back down the path
+                    foundPath = true;
+                    //create a list of nodes that make up the shortest path
+                    List<Tile> shortestPath = new List<Tile>() { currentNode.NodeTile };
+                    AStarNode temp = currentNode;
+                    while (temp.Parent != null)
+                    {
+                        temp = temp.Parent;
+                        shortestPath.Add(temp.NodeTile);
+                    }
+                    return shortestPath;
+                }
+            }
+            if (foundPath)
+            {
+                break;
+            }
+
+            List<AStarNode> neighbours = GetNeighbours(currentNode);
+            foreach (AStarNode neighbour in neighbours)
+            {
+                //if this neighbour is in the closed list then skip over it
+                if (closedList.Contains(neighbour))
+                {
+                    continue;
+                }
+                //if the open list does not have this neighbour then add it
+                if (!openList.Contains(neighbour))
+                {
+                    neighbour.GScore = currentNode.GScore;
+                    neighbour.Parent = currentNode;
+                    openList.Add(neighbour);
+                }
+                else
+                {
+                    //if the GScore for this neighbour is lower than the current one then a better path has been found
+                    //update the neighbour node's GScore
+                    int tempScore = currentNode.GScore + 1;
+                    //if the neighbour's score is greater than the current one then it is not a better path, skip it
+                    if(tempScore >= currentNode.GScore)
+                    {
+                        continue;
+                    }
+                    //this node is a better option, record it
+                    //cameFrom = currentNode;
+                    neighbour.GScore = tempScore;
+                    neighbour.FScore = neighbour.GScore + neighbour.HScore;
+                }
+            }
+
+        } while (openList.Count > 0);
+
+        //pathfinding failed
+        Debug.Log("failed to find a path");
+        return null;
+
+    }
+
+    public List<AStarNode> GetNeighbours(AStarNode node)
+    {
+        List<AStarNode> neighbours = new List<AStarNode>();
+        if(node.Position.x > 0)
+        {
+            //add left neighbour
+            AStarNode temp = aStarNodes[aStarNodes.IndexOf(node) - 1];
+            //Debug.Log(temp.NodeTile.GetTileType());
+            if (temp.NodeTile.GetTileType() != Tile.TileType.ROOM)
+            {
+                //Debug.Log("added left tile");
+                neighbours.Add(temp);
+            }
+        }
+        if(node.Position.x < TilemapData.Instance.GridWidth - 1)
+        {
+            //add right neighbour
+            AStarNode temp = aStarNodes[aStarNodes.IndexOf(node) + 1];
+            //Debug.Log(temp.NodeTile.GetTileType());
+            if (temp.NodeTile.GetTileType() != Tile.TileType.ROOM)
+            {
+                //Debug.Log("added right tile");
+                neighbours.Add(temp);
+            }
+        }
+        if(node.Position.y < TilemapData.Instance.GridHeight - 1)
+        {
+            //add top neighbour
+            AStarNode temp = aStarNodes[aStarNodes.IndexOf(node) + TilemapData.Instance.GridWidth];
+            //Debug.Log(temp.NodeTile.GetTileType());
+            if (temp.NodeTile.GetTileType() != Tile.TileType.ROOM)
+            {
+                //Debug.Log("added top tile");
+                neighbours.Add(temp);
+            }
+        }
+        if(node.Position.y > 0)
+        {
+            //add bottom neighbour
+            AStarNode temp = aStarNodes[aStarNodes.IndexOf(node) - TilemapData.Instance.GridWidth];
+            //Debug.Log(temp.NodeTile.GetTileType());
+            if (temp.NodeTile.GetTileType() != Tile.TileType.ROOM)
+            {
+                //Debug.Log("added top tile");
+                neighbours.Add(temp);
+            }
+        }
+
+        return neighbours;
     }
 }

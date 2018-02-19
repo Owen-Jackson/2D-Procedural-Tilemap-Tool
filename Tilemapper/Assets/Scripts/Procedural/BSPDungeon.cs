@@ -22,6 +22,7 @@ public class BSPDungeon : MonoBehaviour {
 
     public void SetGridSize(int width, int height)
     {
+        Debug.Log(width + " , " + height);
         gridWidth = width;
         gridHeight = height;
     }
@@ -40,10 +41,9 @@ public class BSPDungeon : MonoBehaviour {
             splitLines.Clear();
         }
         splitLines = new List<LineRenderer>();
-        root = new NodeDungeon(0, 0, gridWidth, gridHeight);
+        root = new NodeDungeon(-1, -1, gridWidth + 1, gridHeight + 1);
         nodes.Add(root);
         //branch the tree as far as it will go
-        //nodes = root.SplitBranch(nodes);
         bool hasSplit;
         do
         {
@@ -94,9 +94,27 @@ public class BSPDungeon : MonoBehaviour {
         return rooms;
     }
 
-    public List<Rect> GetCorridors()
+    public void CreateCorridors()
     {
-        List<Rect> corridorsList = new List<Rect>();
+        root.CreateCorridorRecursive();
+    }
+
+    public List<int> GetExits()
+    {
+        List<int> exitPositions = new List<int>();
+        for(int i = 0; i < nodes.Count;i++)
+        {
+            if (nodes[i].GetExits() != null)
+            {
+                exitPositions.AddRange(nodes[i].GetExits());
+            }
+        }
+        return exitPositions;
+    }
+
+    public List<Tile> GetCorridors()
+    {
+        List<Tile> corridorsList = new List<Tile>();
         for(int i = 0; i < nodes.Count; i++)
         {
             if(nodes[i].GetCorridor() != null)
