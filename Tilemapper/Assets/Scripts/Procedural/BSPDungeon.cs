@@ -22,7 +22,7 @@ public class BSPDungeon : MonoBehaviour {
 
     public void SetGridSize(int width, int height)
     {
-        Debug.Log(width + " , " + height);
+        //Debug.Log(width + " , " + height);
         gridWidth = width;
         gridHeight = height;
     }
@@ -58,11 +58,11 @@ public class BSPDungeon : MonoBehaviour {
                         LineRenderer line = (Instantiate(Resources.Load("Prefabs/LineRendererDebug")) as GameObject).GetComponent<LineRenderer>();
                         if (node.IsSplitHorizontal())
                         {
-                            line.SetPositions(new Vector3[2] { new Vector3(node.GetXPos() - 0.5f, node.GetYPos() + node.GetSplitPos(), 0), new Vector3(node.GetXPos() + node.GetWidth() - 0.5f, node.GetYPos() + node.GetSplitPos(), 0) });
+                            line.SetPositions(new Vector3[2] { new Vector3(node.GetXPos() + 0.5f, node.GetYPos() + node.GetSplitPos(), 0), new Vector3(node.GetXPos() + node.GetWidth() - 0.5f, node.GetYPos() + node.GetSplitPos(), 0) });
                         }
                         else
                         {
-                            line.SetPositions(new Vector3[2] { new Vector3(node.GetXPos() + node.GetSplitPos(), node.GetYPos() - 0.5f, 0), new Vector3(node.GetXPos() + node.GetSplitPos(), node.GetYPos() + node.GetHeight() - 0.5f, 0) });
+                            line.SetPositions(new Vector3[2] { new Vector3(node.GetXPos() + node.GetSplitPos(), node.GetYPos() + 0.5f, 0), new Vector3(node.GetXPos() + node.GetSplitPos(), node.GetYPos() + node.GetHeight() - 0.5f, 0) });
                         }
                         splitLines.Add(line);
                         tempList.Add(node.GetLeftChild());

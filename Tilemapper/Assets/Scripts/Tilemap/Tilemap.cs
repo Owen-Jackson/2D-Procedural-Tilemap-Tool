@@ -154,7 +154,7 @@ public class Tilemap : MonoBehaviour {
         List<Room> roomNodes = BSPGenerator.GetNodesWithRooms();
         if(roomNodes.Count > 0)
         {
-            Debug.Log(roomNodes.Count);
+            //Debug.Log(roomNodes.Count);
             foreach (Room room in roomNodes)
             {
                 PlaceRect(room.XPos, room.YPos, room.Width, room.Height, (int)Tile.TileType.ROOM);

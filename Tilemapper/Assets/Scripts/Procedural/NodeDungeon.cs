@@ -8,9 +8,9 @@ public class NodeDungeon
 {
     public class AStarNode
     {
-        public int FScore { get; set; } //The total quality value (= GScore + HScore)
-        public int GScore { get; set; } //How many moves from the starting point to this is
-        public int HScore { get; set; } //How many moves from this point to the finish is
+        public int FScore { get; set; } 
+        public int GScore { get; set; } 
+        public int HScore { get; set; } 
         public Vector2 Position { get; set; }
         public AStarNode Parent { get; set; }
         public Tile NodeTile { get; set; }  //stores the tile at this node
@@ -27,22 +27,14 @@ public class NodeDungeon
     private NodeDungeon leftChild = null;
     private NodeDungeon rightChild = null;
 
-    [SerializeField]
-    protected int treeDepth;  //which layer of the tree this node is in
-
     int lineSplit;           //The position of the split along the axis it is splitting
     bool splitHorizontal;    //says whether the split is along the x or y axis
 
     //positions of the corners of the grid to create the bounds
     int xPos;
     int yPos;
-    [SerializeField]
     int width;
-    [SerializeField]
     int height;
-
-    //private int[] topLeft;
-    //private int[] bottomRight;
 
     //stores the values for the room in this node
     private Room room;
