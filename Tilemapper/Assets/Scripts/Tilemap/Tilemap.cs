@@ -78,14 +78,22 @@ public class Tilemap : MonoBehaviour {
         //create a map for the exit sprites
         exitSpriteIndexMap = new Dictionary<int, int>()
         {
-            {1, 0 },
-            {2, 1 },
-            {3, 2 },
-            {4, 3 },
-            {5, 4 },
-            {8, 5 },
-            {10, 6 },
-            {12, 7 }
+            {-8, 0 },
+            {-12, 1 },
+            {-14, 2 },
+            {-15, 3 },
+            {1, 4 },
+            {2, 5 },
+            {3, 6 },
+            {4, 7 },
+            {5, 8 },
+            {8, 9 },
+            {10, 10 },
+            {12, 11 },
+            {17, 12 },
+            {18, 13 },
+            {20, 14 },
+            {24, 15 }
         };
         InitialiseEmptyTileMap();
         //RandomiseTileMap();
@@ -421,7 +429,7 @@ public class Tilemap : MonoBehaviour {
     {
         int maskValue = 0;
         int north = 0, east = 0, south = 0, west = 0;
-        int flipMultiplier = 1;
+        int edgeHack = 0;   //this one is used for the exits with a wall on one side
         switch (type)
         {
             case Tile.TileType.ROOM:
@@ -526,7 +534,15 @@ public class Tilemap : MonoBehaviour {
                         {
                             north = 1;
                         }
+                        if (Tiles[gridIndex + GridWidth].GetTileType() == Tile.TileType.NONE)
+                        {
+                            edgeHack = -16;
+                        }
                     }
+                }
+                else
+                {
+                    edgeHack = -16;
                 }
                 //get the west value
                 if (gridIndex % GridWidth != 0)
@@ -537,41 +553,57 @@ public class Tilemap : MonoBehaviour {
                         {
                             west = 1;
                         }
+                        if(Tiles[gridIndex - 1].GetTileType() == Tile.TileType.NONE)
+                        {
+                            edgeHack = 16;
+                        }
                     }
+                }
+                else
+                {
+                    edgeHack = 16;
                 }
                 //get the east value
                 if ((gridIndex + 1) % GridWidth != 0)
                 {
                     if (Tiles[gridIndex + 1] != null)
                     {
-                        if (Tiles[gridIndex + 1].GetTileType() == Tile.TileType.CORRIDOR || Tiles[gridIndex + 1].GetTileType() == Tile.TileType.NONE)
+                        if (Tiles[gridIndex + 1].GetTileType() == Tile.TileType.CORRIDOR)
                         {
                             east = 1;
                         }
-                        //else if(Tiles[gridIndex + 1].GetTileType() == Tile.TileType.NONE)
-                        //{
-                          //  flipMultiplier = -1;
-                        //}
+                        if(Tiles[gridIndex + 1].GetTileType() == Tile.TileType.NONE)
+                        {
+                            edgeHack = -16;
+                        }
                     }
+                }
+                else
+                {
+                    edgeHack = -16;
                 }
                 //get the south value
                 if (gridIndex - GridWidth >= 0)
                 {
                     if (Tiles[gridIndex - GridWidth] != null)
                     {
-                        if (Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.CORRIDOR || Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.NONE)
+                        if (Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.CORRIDOR)
                         {
                             south = 1;
                         }
-                        //else if(Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.NONE)
-                        //{
-                          //  flipMultiplier = -1;
-                        //}
+                        if (Tiles[gridIndex - GridWidth].GetTileType() == Tile.TileType.NONE)
+                        {
+                            edgeHack = 16;
+                        }
                     }
+                }
+                else
+                {
+                    edgeHack = 16;
                 }
                 break;
         }
-        maskValue = north + west * 2 + east * 4 + south * 8;
+        maskValue += north + west * 2 + east * 4 + south * 8 + edgeHack;
         return maskValue;
     }
 

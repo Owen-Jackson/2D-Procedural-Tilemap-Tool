@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 176079854fa2b1440ba26a4c34aac441
-timeCreated: 1519019786
+timeCreated: 1519316392
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -13,9 +13,16 @@ TextureImporter:
     21300012: 4_ExitE
     21300014: 3_ExitNW
     21300016: -6_ExitSWS
-    21300018: DragonheartExits_0
+    21300018: 24_ExitSWallW
     21300020: -3_ExitNWCorner
     21300022: -10_ExitSWW
+    21300024: 17_ExitNWallW
+    21300026: -14_ExitWWallN
+    21300028: -12_ExitEWallN
+    21300030: -15_ExitNWallE
+    21300032: -8_ExitSWallE
+    21300034: 20_ExitEWallS
+    21300036: 18_ExitWWallS
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -178,6 +185,110 @@ TextureImporter:
         serializedVersion: 2
         x: 16
         y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: 24_ExitSWallW
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: 17_ExitNWallW
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: -14_ExitWWallN
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: -12_ExitEWallN
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: -15_ExitNWallE
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: -8_ExitSWallE
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 32
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: 20_ExitEWallS
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 32
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: 18_ExitWWallS
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 32
         width: 16
         height: 16
       alignment: 0
