@@ -26,4 +26,9 @@ public class TilemapEditorSettings : MonoBehaviour {
         tilemap.GridHeight = (int)height;
         tilemap.ResizeGrid();
     }
+
+    public void ResizeGrid()
+    {
+        tilemap.ResizeGrid();
+    }
 }

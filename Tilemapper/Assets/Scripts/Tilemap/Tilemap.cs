@@ -2,28 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class Tilemap : MonoBehaviour {
-    enum CorridorTileIDs
-    {
-        CORNERNORTHEAST = 0,
-        CORNERNORTHWEST,
-        CORNERSOUTHEAST,
-        CORNERSOUTHWEST,
-        CORRIDORHORIZONTAL,
-        CORRIDORSURROUNDED,     //Walls on all four sides
-        CORRIDORVERTICAL,
-        CROSSROAD,
-        DEADENDEAST,
-        DEADENDNORTH,
-        DEADENDSOUTH,
-        DEADENDWEST,
-        TJUNCTIONEAST,
-        TJUNCTIONNORTH,
-        TJUNCTIONSOUTH,
-        TJUNCTIONWEST
-    };
-
     //Used to differentiate which tile types to place
     enum TileMode
     {
@@ -151,36 +132,40 @@ public class Tilemap : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        //Right click
-        if (Input.GetMouseButton(1))
+        //check that the mouse isn't over a UI element
+        if (!EventSystem.current.IsPointerOverGameObject())
         {
-            switch (RMB)
+            //Right click
+            if (Input.GetMouseButton(1))
             {
-                case TileMode.DELETE:
-                    DeleteTile();
-                    break;
-                case TileMode.ROOM:
-                    PlaceRoom();
-                    break;
-                case TileMode.CORRIDOR:
-                    PlaceCorridor();
-                    break;
+                switch (RMB)
+                {
+                    case TileMode.DELETE:
+                        DeleteTile();
+                        break;
+                    case TileMode.ROOM:
+                        PlaceRoom();
+                        break;
+                    case TileMode.CORRIDOR:
+                        PlaceCorridor();
+                        break;
+                }
             }
-        }
-        //Left click
-        if (Input.GetMouseButton(0))
-        {
-            switch (LMB)
+            //Left click
+            if (Input.GetMouseButton(0))
             {
-                case TileMode.DELETE:
-                    DeleteTile();
-                    break;
-                case TileMode.ROOM:
-                    PlaceRoom();
-                    break;
-                case TileMode.CORRIDOR:
-                    PlaceCorridor();
-                    break;
+                switch (LMB)
+                {
+                    case TileMode.DELETE:
+                        DeleteTile();
+                        break;
+                    case TileMode.ROOM:
+                        PlaceRoom();
+                        break;
+                    case TileMode.CORRIDOR:
+                        PlaceCorridor();
+                        break;
+                }
             }
         }
     }
@@ -263,111 +248,7 @@ public class Tilemap : MonoBehaviour {
 
     public void ResizeGrid()
     {
-        int widthDifference = GridWidth - PreviousGridWidth;
-        int heightDifference = GridHeight - PreviousGridHeight;
-        //Debug.Log("width difference: " + widthDifference);
-        //Debug.Log("heigth difference: " + heightDifference);
-        //resizing is always done from the top right edges (might be able to change later)
-        //shrink the width of the grid
-        Debug.Log(widthDifference);
-        if (widthDifference < 0)
-        {
-            for (int i = 0; i < GridWidth; i++)
-            {
-                if (i >= GridWidth + widthDifference)
-                {
-                    for (int j = 0; j < GridHeight; j++)
-                    {
-                        Destroy(Tiles[GetPosFromCoords(i, j)]);
-                    }
-                }
-            }
-            for(int i = 0; i < GridWidth * GridHeight;i++)
-            {
-                Tiles[i].SetGridPosition(i);
-            }
-        }
-        else if(widthDifference > 0)
-        {
-            InitialiseEmptyTileMap();
-        }
-
-        if(heightDifference < 0)
-        {
-            for (int i = 0; i < GridHeight; i++)
-            {
-                if (i > GridWidth - widthDifference)
-                {
-                    for (int j = 0; j < GridWidth; j++)
-                    {
-                        Destroy(Tiles[GetPosFromCoords(i, j)].gameObject);
-                    }
-                }
-            }
-            for (int i = 0; i < GridWidth * GridHeight; i++)
-            {
-                Tiles[i].SetGridPosition(i);
-            }
-        }
-        else if(heightDifference > 0)
-        {
-            InitialiseEmptyTileMap();
-        }
-
-        /*
-        if(widthDifference < 0)
-        {
-            List<Tile> removeList = new List<Tile>();
-            Debug.Log("grid list size = " + Tiles.Count);
-            for (int i = PreviousGridWidth - 1; i > PreviousGridWidth + widthDifference - 1; i++)
-            {
-                for(int j = 0; j < GridHeight - 1; j++)
-                {
-                    Debug.Log("removing at: " + GetPosFromCoords(i, j));
-                    Tile toRemove = Tiles[GetPosFromCoords(i, j)];
-                    removeList.Add(toRemove);
-                }
-            }
-            for(int i = 0; i < removeList.Count; i++)
-            {
-                Tiles.Remove(removeList[i]);
-                Destroy(removeList[i]);
-                //Debug.Log("removing tiles from width");
-            }
-        }
-        //expand the width of the grid
-        else if(widthDifference > 0)
-        {
-            InitialiseEmptyTileMap();
-        }
-        //shrink the height of the grid
-        if (heightDifference < 0)
-        {
-            Debug.Log("grid list size = " + Tiles.Count);
-            List<Tile> removeList = new List<Tile>();
-            for (int i = PreviousGridHeight - 1; i > PreviousGridHeight + heightDifference; i++)
-            {
-                for (int j = 0; j < GridWidth; j++)
-                {
-                    Debug.Log("removing at: " + GetPosFromCoords(j, i));
-                    Tile toRemove = Tiles[GetPosFromCoords(j, i) - 1];
-                    removeList.Add(toRemove);
-                    Debug.Log("removing tiles from height");
-                }
-            }
-            for (int i = 0; i < removeList.Count; i++)
-            {
-                Tiles.Remove(removeList[i]);
-                Destroy(removeList[i]);
-                Debug.Log("removing tiles from width");
-            }
-        }
-        //expand the height of the grid
-        else if(heightDifference > 0)
-        {
-            InitialiseEmptyTileMap();
-        }
-        */
+        InitialiseEmptyTileMap();
         UpdateTileMapDataTiles();
     }
 
@@ -387,9 +268,12 @@ public class Tilemap : MonoBehaviour {
     {
         if (Tiles != null)
         {
-            for(int i = 0; i < Tiles.Count; i++)
+            for (int i = 0; i < Tiles.Count; i++)
             {
-                Destroy(Tiles[i].gameObject);
+                if (Tiles[i].gameObject != null)
+                {
+                    Destroy(Tiles[i].gameObject);
+                }
             }
             Tiles.Clear();
         }

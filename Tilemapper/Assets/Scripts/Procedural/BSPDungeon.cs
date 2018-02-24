@@ -10,6 +10,7 @@ public class BSPDungeon : MonoBehaviour {
     public int GridWidth { get; set; }
     public int GridHeight { get; set; }
     List<LineRenderer> splitLines;
+    bool areDebugLinesVisible = true;
     public List<NodeDungeon> nodes;
     [SerializeField]
     List<Room> rooms;
@@ -78,6 +79,8 @@ public class BSPDungeon : MonoBehaviour {
         //make the rooms
         root.CreateRooms();
 
+        //hide the debug lines after a couple of seconds
+        StartCoroutine(WaitToHideDebugLines(3));
     }
 
     public List<Room> GetNodesWithRooms()
@@ -121,7 +124,22 @@ public class BSPDungeon : MonoBehaviour {
             {
                 corridorsList.AddRange(nodes[i].GetCorridor());
             }
-        } 
+        }         
         return corridorsList;
+    }
+
+    public void SetDebugLineVisibility()
+    {
+        for(int i = 0; i < splitLines.Count; i++)
+        {
+            splitLines[i].enabled = areDebugLinesVisible;
+        }
+    }
+
+    IEnumerator WaitToHideDebugLines(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        areDebugLinesVisible = false;
+        SetDebugLineVisibility();
     }
 }
