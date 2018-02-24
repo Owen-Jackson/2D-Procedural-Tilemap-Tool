@@ -7,8 +7,8 @@ public class BSPDungeon : MonoBehaviour {
     //The starting node of the tree
     public NodeDungeon root;
     //stores the size of the grid
-    int gridWidth;
-    int gridHeight;
+    public int GridWidth { get; set; }
+    public int GridHeight { get; set; }
     List<LineRenderer> splitLines;
     public List<NodeDungeon> nodes;
     [SerializeField]
@@ -23,8 +23,8 @@ public class BSPDungeon : MonoBehaviour {
     public void SetGridSize(int width, int height)
     {
         //Debug.Log(width + " , " + height);
-        gridWidth = width;
-        gridHeight = height;
+        GridWidth = width;
+        GridHeight = height;
     }
 
     public void BuildTree()
@@ -41,7 +41,7 @@ public class BSPDungeon : MonoBehaviour {
             splitLines.Clear();
         }
         splitLines = new List<LineRenderer>();
-        root = new NodeDungeon(-1, -1, gridWidth + 1, gridHeight + 1);
+        root = new NodeDungeon(-1, -1, GridWidth + 1, GridHeight + 1);
         nodes.Add(root);
         //branch the tree as far as it will go
         bool hasSplit;

@@ -43,15 +43,63 @@ public class Tilemap : MonoBehaviour {
     [SerializeField]
     private Sprite gridSprite;  //The default sprite for the grid (revert to when deleting a tile from the tilemap)
 
-    //Can store a grid of tiles
+    //Previous width, used when resizing
+    public int PreviousGridWidth { get; set; }
+
+    //previous height, used when resizing
+    public int PreviousGridHeight { get; set; }
+
+    //Width of the tile grid
     [SerializeField]
-    public int GridWidth { get; set; }
+    private int gridWidth;
+    public int GridWidth
+    {
+        get
+        {
+            return gridWidth;
+        }
+        set
+        {
+            PreviousGridWidth = gridWidth;
+            gridWidth = value;
+            TilemapData.Instance.GridWidth = value;
+            if(BSPGenerator != null)
+            {
+                BSPGenerator.GridWidth = value;
+            }
+        }
+    }
+
+    //Height of the tile grid
     [SerializeField]
-    public int GridHeight { get; set; }
+    private int gridHeight;
+    public int GridHeight
+    {
+        get
+        {
+            return gridHeight;
+        }
+        set
+        {
+            PreviousGridHeight = gridHeight;
+            gridHeight = value;
+            TilemapData.Instance.GridHeight = value;
+            if (BSPGenerator != null)
+            {
+                BSPGenerator.GridHeight = value;
+            }
+        }
+    }
+
     [SerializeField]
     int tileSize;
     [SerializeField]
-    public List<Tile> Tiles { get; set; }
+    private List<Tile> tiles;
+    public List<Tile> Tiles
+    {
+        get { return tiles; }
+        set { tiles = value; }
+    }
 
     [SerializeField]
     TileMode LMB;
@@ -65,12 +113,6 @@ public class Tilemap : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-        //WARNING HARD CODED, MAKE CHANGABLE IN UI LATER
-        GridWidth = 30;
-        GridHeight = 30;
-        TilemapData.Instance.GridWidth = GridWidth;
-        TilemapData.Instance.GridHeight = GridHeight;
-
         gridSprite = Resources.Load<Sprite>("Sprites/GridCell");
         roomSprites = Resources.LoadAll<Sprite>("Sprites/DragonheartRooms");
         corridorSprites = Resources.LoadAll<Sprite>("Sprites/DragonHeartCorridors");
@@ -219,6 +261,116 @@ public class Tilemap : MonoBehaviour {
         FullBitmaskPass();
     }
 
+    public void ResizeGrid()
+    {
+        int widthDifference = GridWidth - PreviousGridWidth;
+        int heightDifference = GridHeight - PreviousGridHeight;
+        //Debug.Log("width difference: " + widthDifference);
+        //Debug.Log("heigth difference: " + heightDifference);
+        //resizing is always done from the top right edges (might be able to change later)
+        //shrink the width of the grid
+        Debug.Log(widthDifference);
+        if (widthDifference < 0)
+        {
+            for (int i = 0; i < GridWidth; i++)
+            {
+                if (i >= GridWidth + widthDifference)
+                {
+                    for (int j = 0; j < GridHeight; j++)
+                    {
+                        Destroy(Tiles[GetPosFromCoords(i, j)]);
+                    }
+                }
+            }
+            for(int i = 0; i < GridWidth * GridHeight;i++)
+            {
+                Tiles[i].SetGridPosition(i);
+            }
+        }
+        else if(widthDifference > 0)
+        {
+            InitialiseEmptyTileMap();
+        }
+
+        if(heightDifference < 0)
+        {
+            for (int i = 0; i < GridHeight; i++)
+            {
+                if (i > GridWidth - widthDifference)
+                {
+                    for (int j = 0; j < GridWidth; j++)
+                    {
+                        Destroy(Tiles[GetPosFromCoords(i, j)].gameObject);
+                    }
+                }
+            }
+            for (int i = 0; i < GridWidth * GridHeight; i++)
+            {
+                Tiles[i].SetGridPosition(i);
+            }
+        }
+        else if(heightDifference > 0)
+        {
+            InitialiseEmptyTileMap();
+        }
+
+        /*
+        if(widthDifference < 0)
+        {
+            List<Tile> removeList = new List<Tile>();
+            Debug.Log("grid list size = " + Tiles.Count);
+            for (int i = PreviousGridWidth - 1; i > PreviousGridWidth + widthDifference - 1; i++)
+            {
+                for(int j = 0; j < GridHeight - 1; j++)
+                {
+                    Debug.Log("removing at: " + GetPosFromCoords(i, j));
+                    Tile toRemove = Tiles[GetPosFromCoords(i, j)];
+                    removeList.Add(toRemove);
+                }
+            }
+            for(int i = 0; i < removeList.Count; i++)
+            {
+                Tiles.Remove(removeList[i]);
+                Destroy(removeList[i]);
+                //Debug.Log("removing tiles from width");
+            }
+        }
+        //expand the width of the grid
+        else if(widthDifference > 0)
+        {
+            InitialiseEmptyTileMap();
+        }
+        //shrink the height of the grid
+        if (heightDifference < 0)
+        {
+            Debug.Log("grid list size = " + Tiles.Count);
+            List<Tile> removeList = new List<Tile>();
+            for (int i = PreviousGridHeight - 1; i > PreviousGridHeight + heightDifference; i++)
+            {
+                for (int j = 0; j < GridWidth; j++)
+                {
+                    Debug.Log("removing at: " + GetPosFromCoords(j, i));
+                    Tile toRemove = Tiles[GetPosFromCoords(j, i) - 1];
+                    removeList.Add(toRemove);
+                    Debug.Log("removing tiles from height");
+                }
+            }
+            for (int i = 0; i < removeList.Count; i++)
+            {
+                Tiles.Remove(removeList[i]);
+                Destroy(removeList[i]);
+                Debug.Log("removing tiles from width");
+            }
+        }
+        //expand the height of the grid
+        else if(heightDifference > 0)
+        {
+            InitialiseEmptyTileMap();
+        }
+        */
+        UpdateTileMapDataTiles();
+    }
+
     public void ClearGrid()
     {
         if (Tiles == null)
@@ -233,6 +385,14 @@ public class Tilemap : MonoBehaviour {
 
     public void InitialiseEmptyTileMap()
     {
+        if (Tiles != null)
+        {
+            for(int i = 0; i < Tiles.Count; i++)
+            {
+                Destroy(Tiles[i].gameObject);
+            }
+            Tiles.Clear();
+        }
         Tiles = new List<Tile>();
         for (int i = 0; i < GridHeight; i++)
         {
@@ -241,23 +401,10 @@ public class Tilemap : MonoBehaviour {
                 Tile toAdd = Instantiate(Resources.Load<GameObject>("Prefabs/BaseTile").GetComponent<Tile>(), transform);
                 toAdd.SetTile(gridSprite, 0);
                 toAdd.transform.position = transform.position + new Vector3(j, i, 0);
-                toAdd.SetGridPosition(j + i * GridHeight);
+                toAdd.SetGridPosition(GetPosFromCoords(j, i));
                 Tiles.Add(toAdd);
             }
         }
-        UpdateTileMapDataTiles();
-    }
-
-    public void UpdateWidth(int width)
-    {
-        GridWidth = width;
-        TilemapData.Instance.GridWidth = width;
-    }
-
-    public void UpdateHeight(int height)
-    {
-        GridHeight = height;
-        TilemapData.Instance.GridHeight = height;
     }
 
     private void UpdateTileMapDataTiles()
