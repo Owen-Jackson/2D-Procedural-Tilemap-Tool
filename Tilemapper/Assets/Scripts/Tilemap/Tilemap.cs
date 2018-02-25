@@ -5,13 +5,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class Tilemap : MonoBehaviour {
+    /*
     //Used to differentiate which tile types to place
-    enum TileMode
+    public enum TileMode
     {
         ROOM = 0,
         CORRIDOR = 1,
         DELETE = 2
     };
+    */
 
     [SerializeField]
     private Sprite[] roomSprites;
@@ -83,9 +85,9 @@ public class Tilemap : MonoBehaviour {
     }
 
     [SerializeField]
-    TileMode LMB;
-    [SerializeField]
-    TileMode RMB;
+    private MouseClick lmb;
+    public MouseClick LMB { get { return lmb; } set { lmb = value; } }
+    public MouseClick RMB { get; set; }
 
     [SerializeField]
     BSPDungeon BSPGenerator;
@@ -94,6 +96,10 @@ public class Tilemap : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
+        LMB = new MouseClick();
+        RMB = new MouseClick();
+        LMB.Type = Tile.TileType.ROOM;
+        RMB.Type = Tile.TileType.NONE;
         gridSprite = Resources.Load<Sprite>("Sprites/GridCell");
         roomSprites = Resources.LoadAll<Sprite>("Sprites/DragonheartRooms");
         corridorSprites = Resources.LoadAll<Sprite>("Sprites/DragonHeartCorridors");
@@ -120,8 +126,6 @@ public class Tilemap : MonoBehaviour {
         };
         InitialiseEmptyTileMap();
         //RandomiseTileMap();
-        LMB = TileMode.ROOM;
-        RMB = TileMode.DELETE;
         if (GetComponent<BSPDungeon>())
         {
             BSPGenerator = GetComponent<BSPDungeon>();
@@ -138,32 +142,32 @@ public class Tilemap : MonoBehaviour {
             //Right click
             if (Input.GetMouseButton(1))
             {
-                switch (RMB)
+                switch (RMB.Type)
                 {
-                    case TileMode.DELETE:
+                    case Tile.TileType.NONE:
                         DeleteTile();
                         break;
-                    case TileMode.ROOM:
+                    case Tile.TileType.ROOM:
                         PlaceRoom();
                         break;
-                    case TileMode.CORRIDOR:
-                        PlaceCorridor();
+                    case Tile.TileType.CORRIDOR:
+                        PlaceCorridor(RMB);
                         break;
                 }
             }
             //Left click
             if (Input.GetMouseButton(0))
             {
-                switch (LMB)
+                switch (LMB.Type)
                 {
-                    case TileMode.DELETE:
+                    case Tile.TileType.NONE:
                         DeleteTile();
                         break;
-                    case TileMode.ROOM:
+                    case Tile.TileType.ROOM:
                         PlaceRoom();
                         break;
-                    case TileMode.CORRIDOR:
-                        PlaceCorridor();
+                    case Tile.TileType.CORRIDOR:
+                        PlaceCorridor(LMB);
                         break;
                 }
             }
@@ -304,8 +308,10 @@ public class Tilemap : MonoBehaviour {
         {
             if (hit.collider.tag == "Tile")
             {
-                hit.collider.GetComponent<Tile>().SetTile(gridSprite, 0);
-                UpdateAdjacentTiles(hit.collider.GetComponent<Tile>().GetGridPosition(), Tile.TileType.ROOM);
+                Tile component = hit.collider.GetComponent<Tile>();
+                Tile.TileType oldType = component.GetTileType();
+                component.SetTile(gridSprite, 0);
+                UpdateAdjacentTiles(component.GetGridPosition(), oldType);
             }
         }
     }
@@ -327,6 +333,30 @@ public class Tilemap : MonoBehaviour {
                     UpdateAdjacentTiles(gridPos, Tile.TileType.ROOM);
                     component.SetTile(roomSprites[GetBitmaskValue(gridPos, Tile.TileType.ROOM)], 1);
                 }
+            }
+        }
+    }
+
+    void PlaceCorridor(MouseClick mouseButton)
+    {
+        Vector2 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero);
+        if (hit.collider != null)
+        {
+            if (hit.collider.tag == "Tile")
+            {
+                Tile component = hit.collider.GetComponent<Tile>();
+                if (component.GetTileType() != mouseButton.Type)
+                {
+                    int gridPos = component.GetGridPosition();
+                    //Debug.Log("adding room tile at " + gridPos);
+                    component.SetTile(corridorSprites[GetBitmaskValue(gridPos, mouseButton.Type)], (int)mouseButton.Type);
+                    UpdateAdjacentTiles(gridPos, mouseButton.Type);
+                    component.SetTile(corridorSprites[GetBitmaskValue(gridPos, mouseButton.Type)], (int)mouseButton.Type);
+                    Debug.Log("placing: " + (int)mouseButton.Type);
+
+                }
+                //hit.collider.GetComponent<Tile>().SetTile(corridorSprites[0], 2);
             }
         }
     }
@@ -384,7 +414,14 @@ public class Tilemap : MonoBehaviour {
         {
             if (Tiles[north].GetTileType() == type)
             {
-                Tiles[north].SetTile(roomSprites[GetBitmaskValue(north, type)], 1);
+                if (type == Tile.TileType.ROOM)
+                {
+                    Tiles[north].SetTile(roomSprites[GetBitmaskValue(north, type)], (int) type);
+                }
+                else if(type == Tile.TileType.CORRIDOR)
+                {
+                    Tiles[north].SetTile(corridorSprites[GetBitmaskValue(north, type)], (int)type);
+                }
             }
         }
 
@@ -392,7 +429,14 @@ public class Tilemap : MonoBehaviour {
         {
             if (Tiles[south].GetTileType() == type)
             {
-                Tiles[south].SetTile(roomSprites[GetBitmaskValue(south, type)], 1);
+                if (type == Tile.TileType.ROOM)
+                {
+                    Tiles[south].SetTile(roomSprites[GetBitmaskValue(south, type)], (int)type);
+                }
+                else if (type == Tile.TileType.CORRIDOR)
+                {
+                    Tiles[south].SetTile(corridorSprites[GetBitmaskValue(south, type)], (int)type);
+                }
             }
         }
 
@@ -400,7 +444,14 @@ public class Tilemap : MonoBehaviour {
         {
             if (Tiles[east].GetTileType() == type)
             {
-                Tiles[east].SetTile(roomSprites[GetBitmaskValue(east, type)], 1);
+                if (type == Tile.TileType.ROOM)
+                {
+                    Tiles[east].SetTile(roomSprites[GetBitmaskValue(east, type)], (int)type);
+                }
+                else if (type == Tile.TileType.CORRIDOR)
+                {
+                    Tiles[east].SetTile(corridorSprites[GetBitmaskValue(east, type)], (int)type);
+                }
             }
         }
 
@@ -408,7 +459,14 @@ public class Tilemap : MonoBehaviour {
         {
             if (Tiles[west].GetTileType() == type)
             {
-                Tiles[west].SetTile(roomSprites[GetBitmaskValue(west, type)], 1);
+                if (type == Tile.TileType.ROOM)
+                {
+                    Tiles[west].SetTile(roomSprites[GetBitmaskValue(west, type)], (int)type);
+                }
+                else if (type == Tile.TileType.CORRIDOR)
+                {
+                    Tiles[west].SetTile(corridorSprites[GetBitmaskValue(west, type)], (int)type);
+                }
             }
         }
     }
@@ -439,20 +497,6 @@ public class Tilemap : MonoBehaviour {
     {
         int ind = x + y * GridWidth;
         return ind;
-    }
-
-    void PlaceCorridor()
-    {
-        Vector2 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero);
-        if (hit.collider != null)
-        {
-            if (hit.collider.tag == "Tile")
-            {
-                Debug.Log("adding corridor tile");
-                hit.collider.GetComponent<Tile>().SetTile(corridorSprites[0], 2);
-            }
-        }
     }
 
     //Make it just for room tiles initially
