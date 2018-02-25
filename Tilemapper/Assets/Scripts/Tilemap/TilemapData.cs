@@ -30,10 +30,10 @@ public class TilemapData {
     }
 
     //Stores a Dictionaru of all tile types and their default sprites
-    public Dictionary<Tile.TileType, Sprite> tileSet;
+    public Dictionary<Tile.TileType, Sprite[]> tileSet;
 
     void Init()
     {
-        tileSet = new Dictionary<Tile.TileType, Sprite>();
+        tileSet = new Dictionary<Tile.TileType, Sprite[]>();
     }
 }

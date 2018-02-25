@@ -84,14 +84,17 @@ public class Tilemap : MonoBehaviour {
         set { tiles = value; }
     }
 
-    [SerializeField]
-    private MouseClick lmb;
-    public MouseClick LMB { get { return lmb; } set { lmb = value; } }
+    public List<int> tileEnums;
+
+    public MouseClick LMB { get; set; }
     public MouseClick RMB { get; set; }
 
     [SerializeField]
     BSPDungeon BSPGenerator;
 
+    //stores all of the floors in the current dungeon
+    public Dungeon ThisDungeon { get; set; }
+    public DungeonFloor CurrentFloor { get; set; }
 
     // Use this for initialization
     void Start()
@@ -151,7 +154,7 @@ public class Tilemap : MonoBehaviour {
                         PlaceRoom();
                         break;
                     case Tile.TileType.CORRIDOR:
-                        PlaceCorridor(RMB);
+                        PlaceTile(RMB);
                         break;
                 }
             }
@@ -167,7 +170,7 @@ public class Tilemap : MonoBehaviour {
                         PlaceRoom();
                         break;
                     case Tile.TileType.CORRIDOR:
-                        PlaceCorridor(LMB);
+                        PlaceTile(LMB);
                         break;
                 }
             }
@@ -179,12 +182,23 @@ public class Tilemap : MonoBehaviour {
         //Loop 100 times for testing purposes
         //for (int i = 0; i < 100; i++)
         //{
+        ThisDungeon = new Dungeon();
+        CurrentFloor = new DungeonFloor();
         ClearGrid();
         BSPGenerator.BuildTree();
         AddRooms();
         AddCorridors();
         AddExits();
         FullBitmaskPass();
+
+        tileEnums = new List<int>();
+        for(int i = 0; i < GridWidth * GridHeight; i++)
+        {
+            tileEnums.Add((int)Tiles[i].GetTileType());
+        }
+
+        CurrentFloor.Tiles = tileEnums;
+        ThisDungeon.Floors.Add(CurrentFloor);
         //}
     }
 
@@ -254,6 +268,14 @@ public class Tilemap : MonoBehaviour {
     {
         InitialiseEmptyTileMap();
         UpdateTileMapDataTiles();
+
+        tileEnums = new List<int>();
+        for (int i = 0; i < GridWidth * GridHeight; i++)
+        {
+            tileEnums.Add((int)Tiles[i].GetTileType());
+        }
+
+        CurrentFloor.Tiles = tileEnums;
     }
 
     public void ClearGrid()
@@ -337,7 +359,7 @@ public class Tilemap : MonoBehaviour {
         }
     }
 
-    void PlaceCorridor(MouseClick mouseButton)
+    void PlaceTile(MouseClick mouseButton)
     {
         Vector2 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero);
@@ -385,7 +407,7 @@ public class Tilemap : MonoBehaviour {
     public void FullBitmaskPass()
     {
         foreach(Tile tile in Tiles)
-        {
+        {           
             if (tile.GetTileType() == Tile.TileType.ROOM)
             {
                 tile.SetTile(roomSprites[GetBitmaskValue(tile.GetGridPosition(), Tile.TileType.ROOM)], 1);
@@ -400,6 +422,15 @@ public class Tilemap : MonoBehaviour {
             }
         }
         UpdateTileMapDataTiles();
+    }
+
+    public void LoadFromFile()
+    {
+        for(int i = 0; i < GridWidth * GridHeight; i++)
+        {
+            Tiles[i].SetTileType(CurrentFloor.Tiles[i]);
+        }
+        FullBitmaskPass();
     }
 
     //tells adjacent tiles to update themselves
@@ -685,5 +716,14 @@ public class Tilemap : MonoBehaviour {
     public Sprite GetGridSprite()
     {
         return gridSprite;
+    }
+
+    public List<int> GetFloor(int floorNum)
+    {
+        if(floorNum < ThisDungeon.Floors.Count && floorNum >= 0)
+        {
+            return ThisDungeon.Floors[floorNum].Tiles;
+        }
+        return null;
     }
 }

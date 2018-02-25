@@ -23,6 +23,11 @@ public class Tile : MonoBehaviour {
     [SerializeField]
     TileType type;
 
+    public void SetTileType(int ID)
+    {
+        type = (TileType)ID;
+    }
+
     public void SetTile(Sprite _sprite, int typeID)
     {
         spriteRenderer.sprite = _sprite;
