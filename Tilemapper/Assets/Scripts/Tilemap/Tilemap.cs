@@ -26,12 +26,6 @@ public class Tilemap : MonoBehaviour {
     [SerializeField]
     private Sprite gridSprite;  //The default sprite for the grid (revert to when deleting a tile from the tilemap)
 
-    //Previous width, used when resizing
-    public int PreviousGridWidth { get; set; }
-
-    //previous height, used when resizing
-    public int PreviousGridHeight { get; set; }
-
     //Width of the tile grid
     [SerializeField]
     private int gridWidth;
@@ -43,10 +37,13 @@ public class Tilemap : MonoBehaviour {
         }
         set
         {
-            PreviousGridWidth = gridWidth;
             gridWidth = value;
             TilemapData.Instance.GridWidth = value;
-            if(BSPGenerator != null)
+            if (CurrentFloor != null)
+            {
+                CurrentFloor.FloorWidth = value;
+            }
+            if (BSPGenerator != null)
             {
                 BSPGenerator.GridWidth = value;
             }
@@ -64,9 +61,12 @@ public class Tilemap : MonoBehaviour {
         }
         set
         {
-            PreviousGridHeight = gridHeight;
-            gridHeight = value;
+            gridHeight = value;            
             TilemapData.Instance.GridHeight = value;
+            if(CurrentFloor != null)
+            {
+                CurrentFloor.FloorHeight = value;
+            }
             if (BSPGenerator != null)
             {
                 BSPGenerator.GridHeight = value;
@@ -103,6 +103,7 @@ public class Tilemap : MonoBehaviour {
         RMB = new MouseClick();
         LMB.Type = Tile.TileType.ROOM;
         RMB.Type = Tile.TileType.NONE;
+        tileEnums = new List<int>();
         gridSprite = Resources.Load<Sprite>("Sprites/GridCell");
         roomSprites = Resources.LoadAll<Sprite>("Sprites/DragonheartRooms");
         corridorSprites = Resources.LoadAll<Sprite>("Sprites/DragonHeartCorridors");
@@ -128,6 +129,9 @@ public class Tilemap : MonoBehaviour {
             {24, 15 }
         };
         InitialiseEmptyTileMap();
+        ThisDungeon = new Dungeon();
+        CurrentFloor = new DungeonFloor(GridWidth, GridHeight);
+        ThisDungeon.Floors.Add(CurrentFloor);
         //RandomiseTileMap();
         if (GetComponent<BSPDungeon>())
         {
@@ -183,7 +187,7 @@ public class Tilemap : MonoBehaviour {
         //for (int i = 0; i < 100; i++)
         //{
         ThisDungeon = new Dungeon();
-        CurrentFloor = new DungeonFloor();
+        CurrentFloor = new DungeonFloor(GridWidth, GridHeight);
         ClearGrid();
         BSPGenerator.BuildTree();
         AddRooms();
@@ -275,7 +279,7 @@ public class Tilemap : MonoBehaviour {
             tileEnums.Add((int)Tiles[i].GetTileType());
         }
 
-        CurrentFloor.Tiles = tileEnums;
+        //CurrentFloor.Tiles = tileEnums;
     }
 
     public void ClearGrid()
@@ -424,13 +428,24 @@ public class Tilemap : MonoBehaviour {
         UpdateTileMapDataTiles();
     }
 
-    public void LoadFromFile()
+    public void LoadFloor(int floorNum)
     {
-        for(int i = 0; i < GridWidth * GridHeight; i++)
+        if (ThisDungeon.Floors.ElementAtOrDefault(floorNum) != null)
         {
-            Tiles[i].SetTileType(CurrentFloor.Tiles[i]);
+            CurrentFloor = ThisDungeon.Floors[floorNum];
+            GridWidth = CurrentFloor.FloorWidth;
+            GridHeight = CurrentFloor.FloorHeight;
+            ResizeGrid();
+            for (int i = 0; i < GridWidth * GridHeight; i++)
+            {
+                Tiles[i].SetTileType(CurrentFloor.Tiles[i]);
+            }            
+            FullBitmaskPass();
         }
-        FullBitmaskPass();
+        else
+        {
+            Debug.Log("could not retrieve floor number " + floorNum);
+        }
     }
 
     //tells adjacent tiles to update themselves

@@ -11,7 +11,10 @@ public class TilemapUI : MonoBehaviour {
     public Slider heightSlider;
     public Image LMBSprite;
     public Image RMBSprite;
+    public GameObject EditPanel;
+    public GameObject SavePanel;
     public int CurrentFloorNum { get; set; }
+    public string DungeonFileName { get; set; }
 
     private void Awake()
     {
@@ -56,12 +59,13 @@ public class TilemapUI : MonoBehaviour {
         CurrentFloorNum = newNum;
     }
 
-    public void LoadDungeon(string dungeonName)
+    public void LoadDungeon()
     {
-        string path = "Assets/MapSaves/" + dungeonName + ".json";
+        string path = "Assets/MapSaves/Dungeons/" + DungeonFileName + ".json";
+        //Debug.Log(DungeonFileName);
         if(File.Exists(path))
         {
-            Debug.Log("file found");
+            //Debug.Log("file found");
             string jsonString = File.ReadAllText(path);
             tilemap.ThisDungeon = JsonUtility.FromJson<Dungeon>(jsonString);
         }
@@ -70,27 +74,35 @@ public class TilemapUI : MonoBehaviour {
             Debug.Log("file not found, does " + path + " exist?");
         }
         tilemap.CurrentFloor = tilemap.ThisDungeon.Floors[0];
-        tilemap.LoadFromFile();
+        tilemap.LoadFloor(0);
     }
 
-    public void SaveDungeon(string dungeonName)
+    public void SaveDungeon()
     {
-        string path = "Assets/MapSaves/" + dungeonName +".json";
+        string path = "Assets/MapSaves/Dungeons/" + DungeonFileName + ".json";
         Debug.Log("saving to: " + path);
-        string toWrite = JsonUtility.ToJson(tilemap.ThisDungeon, false);
+        string toWrite = JsonUtility.ToJson(tilemap.ThisDungeon);
         Debug.Log("adding this:\n" + toWrite);
         File.WriteAllText(path, toWrite);
-        /*
-        StreamWriter file = File.CreateText(path);
-        file.WriteLine(toWrite);
-        file.Close();
-        */
     }
 
     public void GenerateFloorLayout()
     {
-        //tilemap.BSPGenerate();
-        LoadDungeon("test");
+        tilemap.BSPGenerate();
+        //LoadDungeon();
         //SaveDungeon("test");
+    }
+
+    public void SwitchToEditPanel()
+    {
+        if(SavePanel.GetComponent<SaveOptionsPanel>().SavePanel.activeSelf)
+        {
+            SavePanel.GetComponent<SaveOptionsPanel>().SavePanel.SetActive(false);
+        }
+        if (SavePanel.GetComponent<SaveOptionsPanel>().LoadPanel.activeSelf)
+        {
+            SavePanel.GetComponent<SaveOptionsPanel>().LoadPanel.SetActive(false);
+        }
+        EditPanel.transform.SetAsLastSibling();
     }
 }
