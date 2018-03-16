@@ -5,16 +5,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class Tilemap : MonoBehaviour {
-    /*
-    //Used to differentiate which tile types to place
-    public enum TileMode
-    {
-        ROOM = 0,
-        CORRIDOR = 1,
-        DELETE = 2
-    };
-    */
-
     [SerializeField]
     private Sprite[] roomSprites;
     [SerializeField]
@@ -93,8 +83,8 @@ public class Tilemap : MonoBehaviour {
     BSPDungeon BSPGenerator;
 
     //stores all of the floors in the current dungeon
-    public Dungeon ThisDungeon { get; set; }
-    public DungeonFloor CurrentFloor { get; set; }
+    public Dungeon ThisDungeon;
+    public DungeonFloor CurrentFloor = null; //{ get; set; }
 
     // Use this for initialization
     void Start()
@@ -128,11 +118,10 @@ public class Tilemap : MonoBehaviour {
             {20, 14 },
             {24, 15 }
         };
-        InitialiseEmptyTileMap();
         ThisDungeon = new Dungeon();
-        CurrentFloor = new DungeonFloor(GridWidth, GridHeight);
-        ThisDungeon.Floors.Add(CurrentFloor);
-        //RandomiseTileMap();
+        AddNewFloor();
+        //ThisDungeon.Floors.Add(CurrentFloor);        //RandomiseTileMap();
+
         if (GetComponent<BSPDungeon>())
         {
             BSPGenerator = GetComponent<BSPDungeon>();
@@ -149,33 +138,25 @@ public class Tilemap : MonoBehaviour {
             //Right click
             if (Input.GetMouseButton(1))
             {
-                switch (RMB.Type)
+                if(RMB.Type == Tile.TileType.NONE)
                 {
-                    case Tile.TileType.NONE:
-                        DeleteTile();
-                        break;
-                    case Tile.TileType.ROOM:
-                        PlaceRoom();
-                        break;
-                    case Tile.TileType.CORRIDOR:
-                        PlaceTile(RMB);
-                        break;
+                    DeleteTile();
+                }
+                else
+                {
+                    PlaceTile(RMB);
                 }
             }
             //Left click
             if (Input.GetMouseButton(0))
             {
-                switch (LMB.Type)
+                if (LMB.Type == Tile.TileType.NONE)
                 {
-                    case Tile.TileType.NONE:
-                        DeleteTile();
-                        break;
-                    case Tile.TileType.ROOM:
-                        PlaceRoom();
-                        break;
-                    case Tile.TileType.CORRIDOR:
-                        PlaceTile(LMB);
-                        break;
+                    DeleteTile();
+                }
+                else
+                {
+                    PlaceTile(LMB);
                 }
             }
         }
@@ -186,8 +167,6 @@ public class Tilemap : MonoBehaviour {
         //Loop 100 times for testing purposes
         //for (int i = 0; i < 100; i++)
         //{
-        ThisDungeon = new Dungeon();
-        CurrentFloor = new DungeonFloor(GridWidth, GridHeight);
         ClearGrid();
         BSPGenerator.BuildTree();
         AddRooms();
@@ -202,7 +181,7 @@ public class Tilemap : MonoBehaviour {
         }
 
         CurrentFloor.Tiles = tileEnums;
-        ThisDungeon.Floors.Add(CurrentFloor);
+        ThisDungeon.Floors[CurrentFloor.floorNumber] = CurrentFloor;
         //}
     }
 
@@ -319,6 +298,7 @@ public class Tilemap : MonoBehaviour {
                 Tiles.Add(toAdd);
             }
         }
+        CurrentFloor.Tiles = tileEnums;
     }
 
     private void UpdateTileMapDataTiles()
@@ -338,31 +318,12 @@ public class Tilemap : MonoBehaviour {
                 Tile.TileType oldType = component.GetTileType();
                 component.SetTile(gridSprite, 0);
                 UpdateAdjacentTiles(component.GetGridPosition(), oldType);
+                CurrentFloor.Tiles[component.GetGridPosition()] = 0;
             }
         }
     }
 
-    void PlaceRoom()
-    {
-        Vector2 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero);
-        if (hit.collider != null)
-        {
-            if (hit.collider.tag == "Tile")
-            {
-                Tile component = hit.collider.GetComponent<Tile>();
-                if (component.GetTileType() != Tile.TileType.ROOM)
-                {
-                    int gridPos = component.GetGridPosition();
-                    //Debug.Log("adding room tile at " + gridPos);
-                    component.SetTile(roomSprites[GetBitmaskValue(gridPos, Tile.TileType.ROOM)], 1);
-                    UpdateAdjacentTiles(gridPos, Tile.TileType.ROOM);
-                    component.SetTile(roomSprites[GetBitmaskValue(gridPos, Tile.TileType.ROOM)], 1);
-                }
-            }
-        }
-    }
-
+    //manually place a tile
     void PlaceTile(MouseClick mouseButton)
     {
         Vector2 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -375,18 +336,29 @@ public class Tilemap : MonoBehaviour {
                 if (component.GetTileType() != mouseButton.Type)
                 {
                     int gridPos = component.GetGridPosition();
-                    //Debug.Log("adding room tile at " + gridPos);
-                    component.SetTile(corridorSprites[GetBitmaskValue(gridPos, mouseButton.Type)], (int)mouseButton.Type);
-                    UpdateAdjacentTiles(gridPos, mouseButton.Type);
-                    component.SetTile(corridorSprites[GetBitmaskValue(gridPos, mouseButton.Type)], (int)mouseButton.Type);
-                    Debug.Log("placing: " + (int)mouseButton.Type);
-
+                    switch (mouseButton.Type)
+                    {
+                        case Tile.TileType.ROOM:
+                            //Debug.Log("adding room tile at " + gridPos);
+                            component.SetTile(roomSprites[GetBitmaskValue(gridPos, Tile.TileType.ROOM)], 1);
+                            UpdateAdjacentTiles(gridPos, Tile.TileType.ROOM);
+                            component.SetTile(roomSprites[GetBitmaskValue(gridPos, Tile.TileType.ROOM)], 1);
+                            break;
+                        case Tile.TileType.CORRIDOR:
+                            //Debug.Log("adding room tile at " + gridPos);
+                            component.SetTile(corridorSprites[GetBitmaskValue(gridPos, mouseButton.Type)], (int)mouseButton.Type);
+                            UpdateAdjacentTiles(gridPos, mouseButton.Type);
+                            component.SetTile(corridorSprites[GetBitmaskValue(gridPos, mouseButton.Type)], (int)mouseButton.Type);
+                            break;
+                    }
+                    CurrentFloor.Tiles[gridPos] = (int)mouseButton.Type;
                 }
                 //hit.collider.GetComponent<Tile>().SetTile(corridorSprites[0], 2);
             }
         }
     }
 
+    //creates a rectangle of the given tile type, used for making the rooms and corridors
     public void PlaceRect(int xPos, int yPos, int width, int height, int tileType)
     {
         for(int i = 0; i < height; i++)
@@ -433,6 +405,7 @@ public class Tilemap : MonoBehaviour {
         if (ThisDungeon.Floors.ElementAtOrDefault(floorNum) != null)
         {
             CurrentFloor = ThisDungeon.Floors[floorNum];
+            tileEnums = CurrentFloor.Tiles;
             GridWidth = CurrentFloor.FloorWidth;
             GridHeight = CurrentFloor.FloorHeight;
             ResizeGrid();
@@ -441,10 +414,20 @@ public class Tilemap : MonoBehaviour {
                 Tiles[i].SetTileType(CurrentFloor.Tiles[i]);
             }            
             FullBitmaskPass();
+            InitialiseTileEnums();
         }
         else
         {
             Debug.Log("could not retrieve floor number " + floorNum);
+        }
+    }
+
+    private void InitialiseTileEnums()
+    {
+        tileEnums = new List<int>();
+        for(int i = 0; i < Tiles.Count; i++)
+        {
+            tileEnums.Add((int)Tiles[i].GetTileType());
         }
     }
 
@@ -545,7 +528,7 @@ public class Tilemap : MonoBehaviour {
         return ind;
     }
 
-    //Make it just for room tiles initially
+    //calculates a bitmask value based on adjacent tiles
     int GetBitmaskValue(int gridIndex, Tile.TileType type)
     {
         int maskValue = 0;
@@ -740,5 +723,63 @@ public class Tilemap : MonoBehaviour {
             return ThisDungeon.Floors[floorNum].Tiles;
         }
         return null;
+    }
+
+    //add a new floor to this dungeon
+    public void AddNewFloor()
+    {
+        //ThisDungeon.Floors.Add(new DungeonFloor(GridWidth, GridHeight));
+        //inserts the new floor to be directly after the current one
+        DungeonFloor newFloor = new DungeonFloor(GridWidth, GridHeight);
+        if (ThisDungeon.Floors.Count > 0)
+        {
+            if (CurrentFloor.floorNumber + 1 == ThisDungeon.Floors.Count)
+            {
+                ThisDungeon.Floors.Add(newFloor);
+            }
+            else
+            {
+                ThisDungeon.Floors.Insert(CurrentFloor.floorNumber + 1, newFloor);
+            }
+        }
+        else
+        {
+            ThisDungeon.Floors.Add(newFloor);
+        }
+
+        //update the floor numbers
+        for(int i = 0; i < ThisDungeon.Floors.Count; i++)
+        {
+            ThisDungeon.Floors[i].SetFloorNumber(i);
+        }
+
+        CurrentFloor = newFloor;
+        //create the new empty floor
+        InitialiseEmptyTileMap();
+        InitialiseTileEnums();
+        CurrentFloor.Tiles = tileEnums;
+    }
+
+    public void RemoveCurrentFloor()
+    {
+        int floorNumber = CurrentFloor.floorNumber;
+        if (ThisDungeon.Floors.Count > 1)
+        {
+            if (floorNumber == 0)
+            {
+                LoadFloor(1);
+            }
+            else
+            {
+                LoadFloor(floorNumber - 1);
+            }
+        }
+        ThisDungeon.Floors.RemoveAt(floorNumber);
+
+        //update the floor numbers
+        for (int i = 0; i < ThisDungeon.Floors.Count; i++)
+        {
+            ThisDungeon.Floors[i].SetFloorNumber(i);
+        }
     }
 }

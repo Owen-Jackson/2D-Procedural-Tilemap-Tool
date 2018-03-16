@@ -4,6 +4,7 @@ using UnityEngine;
 
 [System.Serializable]
 public class DungeonFloor {
+    public int floorNumber;
     public int FloorWidth;
     public int FloorHeight;
     public List<int> Tiles;
@@ -12,5 +13,11 @@ public class DungeonFloor {
     {
         FloorWidth = width;
         FloorHeight = height;
+        Tiles = new List<int>();
+    }
+
+    public void SetFloorNumber(int newNum)
+    {
+        floorNumber = newNum;
     }
 }
