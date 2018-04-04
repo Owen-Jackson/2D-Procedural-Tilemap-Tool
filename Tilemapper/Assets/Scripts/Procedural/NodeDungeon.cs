@@ -398,7 +398,6 @@ public class NodeDungeon
         List<AStarNode> openList = new List<AStarNode>();
         List<AStarNode> closedList = new List<AStarNode>();
 
-        int hValue = (int)(Mathf.Abs((end.x - start.x)) + Mathf.Abs((end.y - start.y)));
         //set the starting node
         AStarNode startFrom = aStarNodes.FirstOrDefault(x => x.Position == exit1);
         AStarNode endAt = aStarNodes.FirstOrDefault(x => x.Position == exit2);

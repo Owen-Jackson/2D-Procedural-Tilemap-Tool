@@ -88,9 +88,9 @@ public class TilemapUI : MonoBehaviour {
     public void SaveDungeon()
     {
         string path = "Assets/MapSaves/Dungeons/" + DungeonFileName + ".json";
-        Debug.Log("saving to: " + path);
+        //Debug.Log("saving to: " + path);
         string toWrite = JsonUtility.ToJson(tilemap.ThisDungeon);
-        Debug.Log("adding this:\n" + toWrite);
+        //Debug.Log("adding this:\n" + toWrite);
         File.WriteAllText(path, toWrite);
 
         //close the save panel

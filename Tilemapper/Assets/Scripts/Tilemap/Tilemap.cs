@@ -120,7 +120,6 @@ public class Tilemap : MonoBehaviour {
         };
         ThisDungeon = new Dungeon();
         AddNewFloor();
-        //ThisDungeon.Floors.Add(CurrentFloor);        //RandomiseTileMap();
 
         if (GetComponent<BSPDungeon>())
         {
@@ -164,9 +163,6 @@ public class Tilemap : MonoBehaviour {
 
     public void BSPGenerate()
     {
-        //Loop 100 times for testing purposes
-        //for (int i = 0; i < 100; i++)
-        //{
         ClearGrid();
         BSPGenerator.BuildTree();
         AddRooms();
@@ -182,7 +178,6 @@ public class Tilemap : MonoBehaviour {
 
         CurrentFloor.Tiles = tileEnums;
         ThisDungeon.Floors[CurrentFloor.floorNumber] = CurrentFloor;
-        //}
     }
 
     public void AddRooms()
@@ -208,7 +203,6 @@ public class Tilemap : MonoBehaviour {
             foreach(Tile corridorTile in corridors)
             {
                 Tiles[corridorTile.GetGridPosition()].SetTile(corridorSprites[0], 2);
-                //PlaceRect((int)corridor.x, (int)corridor.y, (int)corridor.width, (int)corridor.height, (int)Tile.TileType.CORRIDOR);
             }
         }
         UpdateTileMapDataTiles();
@@ -257,8 +251,6 @@ public class Tilemap : MonoBehaviour {
         {
             tileEnums.Add((int)Tiles[i].GetTileType());
         }
-
-        //CurrentFloor.Tiles = tileEnums;
     }
 
     public void ClearGrid()
@@ -339,13 +331,11 @@ public class Tilemap : MonoBehaviour {
                     switch (mouseButton.Type)
                     {
                         case Tile.TileType.ROOM:
-                            //Debug.Log("adding room tile at " + gridPos);
                             component.SetTile(roomSprites[GetBitmaskValue(gridPos, Tile.TileType.ROOM)], 1);
                             UpdateAdjacentTiles(gridPos, Tile.TileType.ROOM);
                             component.SetTile(roomSprites[GetBitmaskValue(gridPos, Tile.TileType.ROOM)], 1);
                             break;
                         case Tile.TileType.CORRIDOR:
-                            //Debug.Log("adding room tile at " + gridPos);
                             component.SetTile(corridorSprites[GetBitmaskValue(gridPos, mouseButton.Type)], (int)mouseButton.Type);
                             UpdateAdjacentTiles(gridPos, mouseButton.Type);
                             component.SetTile(corridorSprites[GetBitmaskValue(gridPos, mouseButton.Type)], (int)mouseButton.Type);
@@ -728,7 +718,6 @@ public class Tilemap : MonoBehaviour {
     //add a new floor to this dungeon
     public void AddNewFloor()
     {
-        //ThisDungeon.Floors.Add(new DungeonFloor(GridWidth, GridHeight));
         //inserts the new floor to be directly after the current one
         DungeonFloor newFloor = new DungeonFloor(GridWidth, GridHeight);
         if (ThisDungeon.Floors.Count > 0)
@@ -762,24 +751,28 @@ public class Tilemap : MonoBehaviour {
 
     public void RemoveCurrentFloor()
     {
-        int floorNumber = CurrentFloor.floorNumber;
         if (ThisDungeon.Floors.Count > 1)
         {
-            if (floorNumber == 0)
+            int floorNumber = CurrentFloor.floorNumber;
+            if (ThisDungeon.Floors.Count > 1)
             {
-                LoadFloor(1);
+                if (floorNumber == 0)
+                {
+                    LoadFloor(1);
+                }
+                else
+                {
+                    LoadFloor(floorNumber - 1);
+                }
             }
-            else
-            {
-                LoadFloor(floorNumber - 1);
-            }
-        }
-        ThisDungeon.Floors.RemoveAt(floorNumber);
 
-        //update the floor numbers
-        for (int i = 0; i < ThisDungeon.Floors.Count; i++)
-        {
-            ThisDungeon.Floors[i].SetFloorNumber(i);
+            ThisDungeon.Floors.RemoveAt(floorNumber);
+
+            //update the floor numbers
+            for (int i = 0; i < ThisDungeon.Floors.Count; i++)
+            {
+                ThisDungeon.Floors[i].SetFloorNumber(i);
+            }
         }
     }
 }
