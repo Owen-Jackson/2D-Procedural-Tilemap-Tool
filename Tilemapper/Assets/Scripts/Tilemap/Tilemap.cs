@@ -333,12 +333,10 @@ public class Tilemap : MonoBehaviour {
                         case Tile.TileType.ROOM:
                             component.SetTile(roomSprites[GetBitmaskValue(gridPos, Tile.TileType.ROOM)], 1);
                             UpdateAdjacentTiles(gridPos, Tile.TileType.ROOM);
-                            component.SetTile(roomSprites[GetBitmaskValue(gridPos, Tile.TileType.ROOM)], 1);
                             break;
                         case Tile.TileType.CORRIDOR:
                             component.SetTile(corridorSprites[GetBitmaskValue(gridPos, mouseButton.Type)], (int)mouseButton.Type);
                             UpdateAdjacentTiles(gridPos, mouseButton.Type);
-                            component.SetTile(corridorSprites[GetBitmaskValue(gridPos, mouseButton.Type)], (int)mouseButton.Type);
                             break;
                     }
                     CurrentFloor.Tiles[gridPos] = (int)mouseButton.Type;
