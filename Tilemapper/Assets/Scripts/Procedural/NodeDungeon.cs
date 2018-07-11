@@ -42,6 +42,7 @@ public class NodeDungeon
     //stores the corridor positions that link this node's children rooms
     private List<Tile> corridor;
 
+    //stores the grid positions of which tiles will be generated as exits
     private List<int> exitPositions;
 
     public NodeDungeon(int x, int y, int _width, int _height) //x and y position starts in the bottom left
@@ -50,6 +51,7 @@ public class NodeDungeon
         yPos = y;
         width = _width;
         height = _height;
+        exitPositions = new List<int>();
     }
 
     public NodeDungeon GetLeftChild()
@@ -224,15 +226,6 @@ public class NodeDungeon
             {
                 rightChild.CreateRooms();
             }
-
-            /*
-            //if this node has two children then make a corridor between them
-            if (leftChild != null && rightChild != null)
-            {
-                //Debug.Log("making corridor between: " + leftChild.GetRoom() + " , " + rightChild.GetRoom());
-                CreateCorridor(leftChild.GetRoom(), rightChild.GetRoom());
-            }
-            */
         }
         else
         {
@@ -272,16 +265,23 @@ public class NodeDungeon
     public void CreateCorridor(Room leftRoom, Room rightRoom)
     {
         corridor = new List<Tile>();
-        //Vector2 point1 = new Vector2(Random.Range(leftRoom.Left, leftRoom.Right), Random.Range(leftRoom.Bottom, leftRoom.Top));
-        //Vector2 point2 = new Vector2(Random.Range(rightRoom.Left, rightRoom.Right), Random.Range(rightRoom.Bottom, rightRoom.Top));
 
         //get where to exit each room
         Vector3 point1 = GetExitEdge(leftRoom, rightRoom);
         Vector3 point2 = GetExitEdge(rightRoom, leftRoom);
+
+        //add the points to the exit list
+        exitPositions.Add(TilemapData.Instance.GetPosFromCoords((int)point1.x, (int)point1.y));
+        exitPositions.Add(TilemapData.Instance.GetPosFromCoords((int)point2.x, (int)point2.y));
+
+        //get the adjacent point from where to start the corridor
         Vector2 exit1 = GetExitPos(point1, (int)point1.z);
         Vector2 exit2 = GetExitPos(point2, (int)point2.z);
 
-        corridor.AddRange(AStar(point1, point2, exit1, exit2));        
+        exitPositions.Add(TilemapData.Instance.GetPosFromCoords((int)exit1.x, (int)exit1.y));
+        exitPositions.Add(TilemapData.Instance.GetPosFromCoords((int)exit2.x, (int)exit2.y));
+
+        corridor.AddRange(AStar(point1, point2));        
     }
 
     //Randomly selects where to create an exit out of this room from
@@ -373,11 +373,10 @@ public class NodeDungeon
                 return new Vector2(origin.x, origin.y + 1);
             default:
                 return origin;
-
         }
     }
 
-    public List<Tile> AStar(Vector2 start, Vector2 end, Vector2 exit1, Vector2 exit2)
+    public List<Tile> AStar(Vector2 start, Vector2 end)
     {
         //create full list of nodes from the grid
         aStarNodes = new List<AStarNode>();
@@ -399,9 +398,8 @@ public class NodeDungeon
         List<AStarNode> closedList = new List<AStarNode>();
 
         //set the starting node
-        AStarNode startFrom = aStarNodes.FirstOrDefault(x => x.Position == exit1);
-        AStarNode endAt = aStarNodes.FirstOrDefault(x => x.Position == exit2);
-        exitPositions = new List<int>() { startFrom.NodeTile.GetGridPosition(), endAt.NodeTile.GetGridPosition() };
+        AStarNode startFrom = aStarNodes.FirstOrDefault(x => x.Position == start);
+        AStarNode endAt = aStarNodes.FirstOrDefault(x => x.Position == end);
         startFrom.GScore = 0;
 
         //add starting point to the open list

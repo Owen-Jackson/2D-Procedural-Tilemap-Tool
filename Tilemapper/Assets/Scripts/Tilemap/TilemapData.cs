@@ -29,11 +29,17 @@ public class TilemapData {
         return ind;
     }
 
-    //Stores a Dictionaru of all tile types and their default sprites
-    public Dictionary<Tile.TileType, Sprite[]> tileSet;
+    //Stores a Dictionary of all tile types and their default sprites
+    public Dictionary<Tile.TileType, Sprite[]> spriteAtlas;
+    public Dictionary<Tile.TileType, Sprite[]> exitSpriteAtlas;
+    public Sprite exitSprite;
+    public Sprite gridSprite;
 
     void Init()
     {
-        tileSet = new Dictionary<Tile.TileType, Sprite[]>();
+        spriteAtlas = new Dictionary<Tile.TileType, Sprite[]>();
+        exitSpriteAtlas = new Dictionary<Tile.TileType, Sprite[]>();
+        exitSprite = Resources.Load<Sprite>("Sprites/ExitSign");
+        gridSprite = Resources.Load<Sprite>("Sprites/GridCell");
     }
 }

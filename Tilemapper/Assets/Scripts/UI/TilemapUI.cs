@@ -12,7 +12,7 @@ public class TilemapUI : MonoBehaviour {
     public Image LMBSprite;
     public Image RMBSprite;
     public GameObject EditPanel;
-    public GameObject SavePanel;
+    public GameObject SaveLoadPanel;
     public Text floorNumText;
     //public int CurrentFloorNum { get; set; }
     public string DungeonFileName { get; set; }
@@ -27,7 +27,6 @@ public class TilemapUI : MonoBehaviour {
             tileOptions[i].tilemap = tilemap;
         }
     }
-
 
     private void Update()
     {
@@ -82,7 +81,7 @@ public class TilemapUI : MonoBehaviour {
         tilemap.LoadFloor(0);
 
         //close the load panel
-        SavePanel.GetComponent<SaveOptionsPanel>().LoadPanel.SetActive(false);
+        SaveLoadPanel.GetComponent<SaveOptionsPanel>().LoadPanel.SetActive(false);
     }
 
     public void SaveDungeon()
@@ -94,7 +93,7 @@ public class TilemapUI : MonoBehaviour {
         File.WriteAllText(path, toWrite);
 
         //close the save panel
-        SavePanel.GetComponent<SaveOptionsPanel>().SavePanel.SetActive(false);
+        SaveLoadPanel.GetComponent<SaveOptionsPanel>().SavePanel.SetActive(false);
     }
 
     //generates a floor
@@ -106,13 +105,13 @@ public class TilemapUI : MonoBehaviour {
     //for swapping UI tabs
     public void SwitchToEditPanel()
     {
-        if (SavePanel.GetComponent<SaveOptionsPanel>().SavePanel.activeSelf)
+        if (SaveLoadPanel.GetComponent<SaveOptionsPanel>().SavePanel.activeSelf)
         {
-            SavePanel.GetComponent<SaveOptionsPanel>().SavePanel.SetActive(false);
+            SaveLoadPanel.GetComponent<SaveOptionsPanel>().SavePanel.SetActive(false);
         }
-        if (SavePanel.GetComponent<SaveOptionsPanel>().LoadPanel.activeSelf)
+        if (SaveLoadPanel.GetComponent<SaveOptionsPanel>().LoadPanel.activeSelf)
         {
-            SavePanel.GetComponent<SaveOptionsPanel>().LoadPanel.SetActive(false);
+            SaveLoadPanel.GetComponent<SaveOptionsPanel>().LoadPanel.SetActive(false);
         }
         EditPanel.transform.SetAsLastSibling();
     }

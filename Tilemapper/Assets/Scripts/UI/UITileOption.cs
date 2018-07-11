@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public class UITileOption : MonoBehaviour, IPointerClickHandler {
-
+    public ClickActions actionType = ClickActions.NONE;
     public Tile.TileType type;
     public Sprite sprite;
     public Image image;
@@ -15,23 +15,23 @@ public class UITileOption : MonoBehaviour, IPointerClickHandler {
     {
         image = GetComponent<Image>();
         sprite = image.sprite;
-
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Left)
         {
+            tilemap.LMB.CurrentAction = actionType;
             tilemap.LMB.Type = type;
             tilemap.LMB.TileSprite = sprite;
             GetComponentInParent<TilemapUI>().SetLMBSprite(sprite);
         }
         else if(eventData.button == PointerEventData.InputButton.Right)
         {
+            tilemap.RMB.CurrentAction = actionType;
             tilemap.RMB.Type = type;
             tilemap.RMB.TileSprite = sprite;
             GetComponentInParent<TilemapUI>().SetRMBSprite(sprite);
         }
-    }
-    
+    }    
 }

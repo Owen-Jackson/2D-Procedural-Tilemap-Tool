@@ -1,0 +1,10 @@
+{
+  {
+    "tileType": "Tile.TileType.NONE",
+    "compatibleExitTypes": []
+  },
+  {
+    "tileType": "Tile.TileType.EXIT",
+    "compatibleExitTypes":  ["CORRIDOR", "ROOM"]
+  }
+}
