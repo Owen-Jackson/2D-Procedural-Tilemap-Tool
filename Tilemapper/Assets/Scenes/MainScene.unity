@@ -415,7 +415,7 @@ MonoBehaviour:
   LMBSprite: {fileID: 1902094665}
   RMBSprite: {fileID: 255835490}
   EditPanel: {fileID: 1650715990}
-  SaveLoadPanel: {fileID: 0}
+  SaveLoadPanel: {fileID: 1131082943}
   floorNumText: {fileID: 990386710}
 --- !u!114 &119021247
 MonoBehaviour:
@@ -6321,6 +6321,7 @@ GameObject:
   - component: {fileID: 1610566918}
   - component: {fileID: 1610566917}
   - component: {fileID: 1610566919}
+  - component: {fileID: 1610566920}
   m_Layer: 0
   m_Name: TileManager
   m_TagString: Untagged
@@ -6353,6 +6354,7 @@ MonoBehaviour:
     FloorWidth: 0
     FloorHeight: 0
     Tiles: 
+    Exits: 
 --- !u!4 &1610566918
 Transform:
   m_ObjectHideFlags: 0
@@ -6378,6 +6380,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nodes: []
+--- !u!114 &1610566920
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1610566916}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e7ed7c44a7420943ab7d0339e4f3402, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1630120452
 GameObject:
   m_ObjectHideFlags: 0

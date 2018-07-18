@@ -223,6 +223,7 @@ public class Tilemap : MonoBehaviour {
             foreach(int exit in exits)
             {
                 Tiles[exit].SetIsExit(true);
+                CurrentFloor.Exits[exit] = true;
             }
         }
     }
@@ -233,9 +234,11 @@ public class Tilemap : MonoBehaviour {
         UpdateTileMapDataTiles();
 
         tileEnums = new List<int>();
+        CurrentFloor.Exits = new List<bool>();
         for (int i = 0; i < GridWidth * GridHeight; i++)
         {
             tileEnums.Add((int)Tiles[i].GetTileType());
+            CurrentFloor.Exits.Add(false);
         }
     }
 
@@ -248,6 +251,7 @@ public class Tilemap : MonoBehaviour {
         for (int i = 0; i < GridHeight * GridWidth; i++)
         {
             Tiles[i].DeleteMe();
+            CurrentFloor.Exits[i] = false;
         }
     }
 
@@ -277,7 +281,6 @@ public class Tilemap : MonoBehaviour {
             }
         }
         CurrentFloor.Tiles = tileEnums;
-
         for(int i = 0; i < Tiles.Count; i++)
         {
             UpdateTileNeighbours(Tiles[i]);
@@ -342,6 +345,7 @@ public class Tilemap : MonoBehaviour {
                     component.SetIsExit(true);
                     int gridPos = component.GetGridPosition();
                     UpdateAdjacentTiles(gridPos);
+                    CurrentFloor.Exits[gridPos] = true;
                 }
             }
         }
@@ -362,6 +366,7 @@ public class Tilemap : MonoBehaviour {
                     component.SetIsExit(false);
                     int gridPos = component.GetGridPosition();
                     UpdateAdjacentTiles(gridPos);
+                    CurrentFloor.Exits[gridPos] = false;
                 }
             }
         }
@@ -462,11 +467,14 @@ public class Tilemap : MonoBehaviour {
             tileEnums = CurrentFloor.Tiles;
             GridWidth = CurrentFloor.FloorWidth;
             GridHeight = CurrentFloor.FloorHeight;
+            List<bool> exitsTemp = CurrentFloor.Exits;  //store the exits here before ResizeGrid wipes them
             ResizeGrid();
             for (int i = 0; i < GridWidth * GridHeight; i++)
             {
                 Tiles[i].SetTileType(CurrentFloor.Tiles[i]);
-            }            
+                Tiles[i].SetIsExit(exitsTemp[i]);   //update from the temp because ResizeGrid clears the CurrentFloor's list
+            }
+            CurrentFloor.Exits = exitsTemp;
             FullBitmaskPass();
             InitialiseTileEnums();
         }
@@ -704,6 +712,11 @@ public class Tilemap : MonoBehaviour {
         InitialiseEmptyTileMap();
         InitialiseTileEnums();
         CurrentFloor.Tiles = tileEnums;
+        //initialise so all tiles are not exits
+        for(int i = 0; i < Tiles.Count; i++)
+        {
+            CurrentFloor.Exits.Add(false);
+        }
     }
 
     public void RemoveCurrentFloor()

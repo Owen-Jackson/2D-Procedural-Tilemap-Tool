@@ -39,7 +39,7 @@ public class TilemapUI : MonoBehaviour {
     public void SetGridWidth(float width)
     {
         tilemap.GridWidth = (int)width;
-        tilemap.ResizeGrid();
+        tilemap.ResizeGrid();        
     }
 
     public void SetGridHeight(float height)
